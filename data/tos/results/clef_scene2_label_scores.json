@@ -1,0 +1,49 @@
+{
+ "labels": "data/tos/labels/tos_labels.json",
+ "scene_cut": 0.6,
+ "grade_cut": 0.5,
+ "reports": [
+  {
+   "level": "scene",
+   "shots": 124,
+   "pairs": 7626,
+   "same_pairs": 912,
+   "cutoff": 0.6,
+   "auc": 0.977,
+   "precision": 0.876,
+   "recall": 0.723,
+   "f1": 0.792,
+   "true_pos": 659,
+   "false_pos": 93,
+   "false_neg": 253,
+   "mean_p_same": 0.7,
+   "mean_p_different": 0.119,
+   "clusters_predicted": 28,
+   "clusters_true": 20,
+   "purity": 0.927,
+   "adjusted_rand": 0.85,
+   "shots_right": 115
+  },
+  {
+   "level": "grade",
+   "shots": 124,
+   "pairs": 912,
+   "same_pairs": 149,
+   "cutoff": 0.5,
+   "auc": 0.902,
+   "precision": 0.423,
+   "recall": 0.879,
+   "f1": 0.571,
+   "true_pos": 131,
+   "false_pos": 179,
+   "false_neg": 18,
+   "mean_p_same": 0.755,
+   "mean_p_different": 0.271,
+   "clusters_predicted": 51,
+   "clusters_true": 68,
+   "purity": 0.782,
+   "adjusted_rand": 0.655,
+   "shots_right": 97
+  }
+ ]
+}

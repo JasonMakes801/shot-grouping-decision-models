@@ -1,0 +1,11 @@
+{
+ "kind": "scene",
+ "pairs": 7626,
+ "requests": 12,
+ "input_tokens": 1204848,
+ "cost": 0.0506,
+ "seconds": 10.8,
+ "model": "typesafe/jev-1.14-20261014",
+ "image_size": "784x326",
+ "scope": "all pairs"
+}

@@ -1,0 +1,11 @@
+{
+ "kind": "grade",
+ "pairs": 903,
+ "requests": 6,
+ "input_tokens": 267194,
+ "cost": 0.0112,
+ "seconds": 2.5,
+ "model": "typesafe/jev-1.14-20261014",
+ "image_size": "784x326",
+ "scope": "pairs within the same scene2 group"
+}

@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Hand-labeling board. Same storyboard-wall look as the Jev board. The board
+   starts from Jev's grouping, the person corrects it, and the export records
+   what moved. Unsorted shots sit in a tape at the top in edit order. */
+:root {
+  --bg: #1c1d1f; --panel: #242528; --sub: #2c2e32; --line: #3a3c41;
+  --fg: #e3e2de; --muted: #8e9096; --accent: #e2a74b; --accent-ink: #1c1d1f;
+  --drop: #6fc3a0; --moved: #6fc3a0; --doubt: #e07070;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; padding: 20px clamp(16px, 3vw, 40px) 120px; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+header { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: end; justify-content: space-between; margin-bottom: 14px; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; margin: 0; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 70ch; line-height: 1.45; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-top: 8px; }
+.facts b { color: var(--fg); font-weight: 500; }
+.facts b.done { color: var(--drop); }
+.facts b.warn { color: var(--doubt); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.ghost, .primary { all: unset; cursor: pointer; font-family: var(--font-display); font-weight: 500; font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); }
+.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+.ghost:hover { border-color: var(--muted); }
+.ghost[aria-pressed="true"] { background: var(--sub); border-color: var(--muted); }
+.ghost:focus-visible, .primary:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+.ghost:disabled { opacity: 0.4; cursor: default; }
+.spacer { flex: 1; }
+.keys { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); line-height: 1.7; }
+.keys kbd { font-family: inherit; background: var(--sub); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; color: var(--fg); }
+.legend { display: inline-flex; gap: 14px; align-items: center; font-size: 0.75rem; color: var(--muted); }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+#fileInput { display: none; }
+
+/* Unsorted tape */
+.tape-wrap { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 8px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.tape-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+.tape { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; min-height: 44px; scrollbar-width: thin; }
+.tape .shot { flex: 0 0 150px; }
+.tape.over { outline: 2px dashed var(--drop); outline-offset: 2px; }
+.tape.collapsed .shot { flex-basis: 96px; }
+.tape.collapsed .meta { display: none; }
+.tape:empty::after { content: "nothing unsorted. Drop a shot here or press U to take it out of a group."; color: var(--muted); font-size: 0.78rem; align-self: center; }
+
+/* Scene columns */
+.board { display: flex; gap: 12px; align-items: flex-start; }
+.stack { flex: 1 1 0; min-width: 0; display: grid; gap: 12px; align-content: start; }
+.col { --h: 205; background: var(--panel); border: 2px solid hsl(var(--h) 78% 56%); border-radius: 7px; padding: 10px; display: grid; gap: 8px; }
+.col.active { box-shadow: 0 0 0 3px hsl(var(--h) 78% 56% / 0.35); }
+.col-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 2px 6px; border-bottom: 1px solid hsl(var(--h) 35% 32%); cursor: grab; }
+.col-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0; color: hsl(var(--h) 85% 70%); white-space: nowrap; }
+.col-head input { all: unset; flex: 1; min-width: 0; font-family: var(--font-body); font-size: 0.85rem; color: var(--fg); border-bottom: 1px dashed transparent; padding: 1px 2px; }
+.col-head input:focus { border-bottom-color: var(--muted); }
+.col-head input::placeholder { color: var(--muted); }
+.col-head span { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.grade { background: hsl(var(--h) 14% 20%); border: 1px solid hsl(var(--h) 24% 48%); border-radius: 5px; padding: 7px; display: grid; gap: 7px; min-height: 40px; }
+.grade.alt { background: hsl(var(--h) 8% 16%); border-color: hsl(var(--h) 16% 34%); }
+.grade.over, .newgroup.over, .newscene.over { outline: 2px dashed var(--drop); outline-offset: 1px; }
+.grade-head { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; cursor: grab; }
+.grade-head b { color: var(--fg); font-weight: 500; }
+.grade-head button { all: unset; cursor: pointer; color: var(--muted); padding: 0 4px; }
+.grade-head button:hover { color: var(--fg); }
+.newgroup, .newscene { border: 1px dashed var(--line); border-radius: 5px; color: var(--muted); font-size: 0.75rem; text-align: center; padding: 8px; cursor: pointer; }
+.newgroup:hover, .newscene:hover { color: var(--fg); border-color: var(--muted); }
+.newscene { flex: 1 1 0; min-width: 160px; padding: 24px 8px; }
+
+/* Shots */
+.shot { all: unset; cursor: grab; display: grid; gap: 3px; border-radius: 3px; position: relative; }
+.shot img { display: block; width: 100%; aspect-ratio: 1568 / 650; object-fit: cover; border-radius: 3px; outline: 2px solid transparent; outline-offset: 1px; pointer-events: none; }
+.shot:focus-visible img { outline-color: var(--fg); }
+.shot.selected img { outline-color: var(--accent); }
+.shot.dragging { opacity: 0.4; }
+.meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta .ev { color: var(--fg); }
+.mark { position: absolute; top: 4px; left: 4px; display: flex; gap: 3px; }
+.mark i { display: block; width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1px var(--bg); }
+.mark i.moved { background: var(--moved); }
+.mark i.doubt { background: var(--doubt); }
+.badge { position: absolute; top: 4px; right: 4px; font-family: var(--font-mono); font-size: 0.68rem; font-variant-numeric: tabular-nums; padding: 1px 5px; border-radius: 3px; background: var(--bg); color: var(--fg); }
+.badge.high { background: var(--accent); color: var(--accent-ink); }
+.board.focus .shot:not(.selected) img, .tape.focus .shot:not(.selected) img { opacity: var(--o, 1); }
+
+/* Lightbox */
+.lightbox { position: fixed; inset: 0; background: rgb(0 0 0 / 0.92); display: grid; place-items: center; z-index: 20; }
+.lightbox img { max-width: 96vw; max-height: 86vh; border-radius: 4px; }
+.lightbox .cap { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; font-family: var(--font-mono); font-size: 0.85rem; color: var(--fg); }
+.lightbox .cap span { color: var(--muted); margin-left: 14px; }
+
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--line); color: var(--fg); padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; z-index: 30; opacity: 0; transition: opacity 0.2s; pointer-events: none; max-width: 70vw; text-align: center; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{SUBTITLE}}</p>
+    <div class="facts">
+      <span>Shots <b id="shotCount">0</b></span>
+      <span>Labeled <b id="labeledCount">0</b></span>
+      <span>Scenes <b id="sceneCount">0</b></span>
+      <span>Grade groups <b id="gradeCount">0</b></span>
+      <span>Moved since seed <b id="movedCount">0</b></span>
+      <span>Doubtful <b id="doubtCount">0</b></span>
+      <span>Saved <b id="savedAt">never</b></span>
+    </div>
+  </div>
+  <div class="keys">
+    <kbd>click</kbd> select, <kbd>shift</kbd>-click range, <kbd>drag</kbd> to move, <kbd>D</kbd> next doubtful<br>
+    <kbd>N</kbd> new scene from selection, <kbd>G</kbd> new group in active scene, <kbd>Enter</kbd> add to active group<br>
+    <kbd>U</kbd> to unsorted, <kbd>Z</kbd> undo, <kbd>Esc</kbd> clear, <kbd>Space</kbd> view large, <kbd>P</kbd> Jev's probabilities
+  </div>
+</header>
+
+<nav class="toolbar">
+  <button type="button" class="primary" id="exportBtn">Export labels.json</button>
+  <button type="button" class="ghost" id="copyBtn">Copy JSON</button>
+  <button type="button" class="ghost" id="importBtn">Import JSON</button>
+  <input type="file" id="fileInput" accept="application/json">
+  <button type="button" class="ghost" id="undoBtn" disabled>Undo</button>
+  <button type="button" class="ghost" id="doubtBtn">Next doubtful</button>
+  <label class="legend" title="A shot is doubtful when Jev gives an outsider more than this, or its own mates less than one minus this">doubt above <input id="doubtTh" type="range" min="0.5" max="0.85" step="0.05" value="0.65" style="width:90px;accent-color:var(--accent);vertical-align:middle"> <output id="doubtThValue" style="font-family:var(--font-mono);color:var(--accent)">0.65</output></label>
+  <button type="button" class="ghost" id="jevBtn" aria-pressed="true">Jev's view on click</button>
+  <span class="legend"><span><i style="background:var(--moved)"></i>moved since seed</span><span><i style="background:var(--doubt)"></i>Jev unsure</span></span>
+  <span class="spacer"></span>
+  <button type="button" class="ghost" id="collapseBtn">Small tape</button>
+  <button type="button" class="ghost" id="reseedBtn">Reseed from Jev</button>
+  <button type="button" class="ghost" id="resetBtn">Start empty</button>
+</nav>
+
+<div class="tape-wrap">
+  <div class="tape-head"><span>Unsorted, edit order</span><span id="tapeCount"></span></div>
+  <div class="tape" id="tape" data-drop="unsorted"></div>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = /*DATA*/null;
+const FPS = DATA.fps ?? 24;
+const shots = DATA.shots;                      // edit order
+const n = shots.length;
+const STORE = `labels:${DATA.dataset}`;
+const pad = (v, w) => String(v).padStart(w, "0");
+const key = e => pad(e, 3);
+const idx = new Map(shots.map((s, i) => [s.event, i]));
+const HUES = [205, 28, 150, 330, 262, 52, 182, 0, 112, 295];
+
+function timecode(frames) {
+  const f = frames + (DATA.tcStartFrames ?? 0);
+  return [Math.floor(f / (3600 * FPS)), Math.floor(f / (60 * FPS)) % 60, Math.floor(f / FPS) % 60, f % FPS]
+    .map(v => pad(v, 2)).join(":");
+}
+
+// P(same) matrices from Jev's two passes. Grade pairs were only asked inside
+// Jev's scenes, so a missing grade pair counts as 0.
+function matrix(pairs, missing) {
+  const m = Array.from({ length: n }, () => new Float64Array(n).fill(missing));
+  for (let i = 0; i < n; i++) m[i][i] = 1;
+  for (const [pair, p] of Object.entries(pairs)) {
+    const [a, b] = pair.split("-").map(Number);
+    if (idx.has(a) && idx.has(b)) m[idx.get(a)][idx.get(b)] = m[idx.get(b)][idx.get(a)] = p;
+  }
+  return m;
+}
+const sceneP = matrix(DATA.scenePairs, 0);
+const gradeP = matrix(DATA.gradePairs, 0);
+
+// ---- State -----------------------------------------------------------------
+// scenes: [{uid, name, groups: [{uid, shots: [shotIndex...]}]}]. Shots not in
+// any group are unsorted. Ids S1, S1G1 are assigned at export in edit order.
+let scenes = [];
+let history = [];
+let selected = new Set();
+let anchor = null;          // last clicked shot, for shift-click ranges and Space
+let activeScene = null;     // uid
+let activeGroup = null;     // uid
+let uidCounter = 1;
+let showJev = true;
+let touched = new Set();   // shots the person moved by hand, as opposed to shots whose mates changed
+const uid = () => `u${uidCounter++}`;
+
+// The seed, as partitions keyed by shot index, so moves can be detected later
+// no matter how groups are renamed or merged.
+const seedSceneMates = new Array(n).fill(""), seedGroupMates = new Array(n).fill("");
+(function indexSeed() {
+  for (const groups of DATA.seed.scenes) {
+    const sceneIdx = groups.flat().map(e => idx.get(e)).filter(i => i !== undefined).sort((a, b) => a - b);
+    for (const g of groups) {
+      const gi = g.map(e => idx.get(e)).filter(i => i !== undefined).sort((a, b) => a - b);
+      for (const i of gi) { seedSceneMates[i] = sceneIdx.join(","); seedGroupMates[i] = gi.join(","); }
+    }
+  }
+})();
+function seedScenes() {
+  return DATA.seed.scenes.map(groups => ({
+    uid: uid(), name: "",
+    groups: groups.map(g => ({ uid: uid(), shots: g.map(e => idx.get(e)).filter(i => i !== undefined) })),
+  }));
+}
+
+function placement() {
+  const where = new Map();  // shotIndex -> {scene, group}
+  for (const sc of scenes) for (const g of sc.groups) for (const i of g.shots) where.set(i, { scene: sc, group: g });
+  return where;
+}
+function unsortedList() {
+  const where = placement();
+  return shots.map((_, i) => i).filter(i => !where.has(i));
+}
+function snapshot() {
+  history.push(JSON.stringify({ scenes, touched: [...touched] }));
+  if (history.length > 200) history.shift();
+  undoBtn.disabled = false;
+}
+function undo() {
+  if (!history.length) return;
+  const h = JSON.parse(history.pop()); scenes = h.scenes; touched = new Set(h.touched);
+  undoBtn.disabled = !history.length;
+  selected.clear();
+  render(); save(); toast("Undone");
+}
+function save() {
+  try {
+    localStorage.setItem(STORE, JSON.stringify({ scenes, uidCounter, touched: [...touched], savedAt: new Date().toISOString() }));
+    savedAt.textContent = new Date().toLocaleTimeString();
+  } catch (e) { savedAt.textContent = "not saved"; }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (!raw) return false;
+    const d = JSON.parse(raw);
+    scenes = d.scenes ?? []; uidCounter = d.uidCounter ?? 1; touched = new Set(d.touched ?? []);
+    savedAt.textContent = d.savedAt ? new Date(d.savedAt).toLocaleTimeString() : "restored";
+    return true;
+  } catch (e) { return false; }
+}
+
+// Scenes sorted by their first shot in edit order, groups likewise.
+function normalized() {
+  for (const sc of scenes) {
+    sc.groups = sc.groups.filter(g => g.shots.length);
+    for (const g of sc.groups) g.shots.sort((a, b) => a - b);
+    sc.groups.sort((a, b) => a.shots[0] - b.shots[0]);
+  }
+  scenes = scenes.filter(sc => sc.groups.length);
+  scenes.sort((a, b) => a.groups[0].shots[0] - b.groups[0].shots[0]);
+  return scenes;
+}
+
+// A shot has "moved" when its set of scene-mates or group-mates differs from the seed.
+function moveState() {
+  const where = placement();
+  const sceneMates = new Array(n).fill(""), groupMates = new Array(n).fill("");
+  for (const sc of scenes) {
+    const all = sc.groups.flatMap(g => g.shots).sort((a, b) => a - b).join(",");
+    for (const g of sc.groups) { const gm = g.shots.slice().sort((a, b) => a - b).join(","); for (const i of g.shots) { sceneMates[i] = all; groupMates[i] = gm; } }
+  }
+  return shots.map((_, i) => ({
+    placed: where.has(i),
+    scene: where.has(i) && sceneMates[i] !== seedSceneMates[i],
+    group: where.has(i) && groupMates[i] !== seedGroupMates[i],
+  }));
+}
+
+// Doubt: Jev's own probabilities disagree with the current placement. Scene level:
+// mean P(same scene) with scene-mates under 1 - doubtTh, or some outsider above doubtTh.
+// Grade level: the same with grade probabilities inside the scene. At 0.65 about a
+// quarter of the Tears of Steel shots are flagged, at 0.5 most of them are.
+let doubtTh = 0.65;
+function doubtState() {
+  const where = placement();
+  const out = shots.map(() => null);
+  for (const sc of scenes) {
+    const members = sc.groups.flatMap(g => g.shots);
+    const inScene = new Set(members);
+    for (const g of sc.groups) for (const i of g.shots) {
+      const reasons = [];
+      const mates = members.filter(j => j !== i);
+      if (mates.length) {
+        const meanIn = mates.reduce((a, j) => a + sceneP[i][j], 0) / mates.length;
+        if (meanIn < 1 - doubtTh) reasons.push(`scene: mean P with scene-mates ${meanIn.toFixed(2)}`);
+      }
+      let bestOut = -1, bestJ = -1;
+      for (let j = 0; j < n; j++) if (!inScene.has(j) && where.has(j) && sceneP[i][j] > bestOut) { bestOut = sceneP[i][j]; bestJ = j; }
+      if (bestOut > doubtTh) reasons.push(`scene: P ${bestOut.toFixed(2)} with ${key(shots[bestJ].event)} in another scene`);
+      const gmates = g.shots.filter(j => j !== i);
+      if (gmates.length) {
+        const meanG = gmates.reduce((a, j) => a + gradeP[i][j], 0) / gmates.length;
+        if (meanG < 1 - doubtTh) reasons.push(`grade: mean P with group-mates ${meanG.toFixed(2)}`);
+      }
+      let bestG = -1, bestGJ = -1;
+      for (const j of members) if (!g.shots.includes(j) && gradeP[i][j] > bestG) { bestG = gradeP[i][j]; bestGJ = j; }
+      if (bestG > doubtTh) reasons.push(`grade: P ${bestG.toFixed(2)} with ${key(shots[bestGJ].event)} in another group`);
+      if (reasons.length) out[i] = reasons;
+    }
+  }
+  return out;
+}
+let doubts = shots.map(() => null);
+let moves = [];
+
+function exportObject() {
+  normalized();
+  const rows = [];
+  const mv = moveState();
+  const out = scenes.map((sc, s) => ({
+    id: `S${s + 1}`, name: sc.name || "",
+    groups: sc.groups.map((g, k) => {
+      const gid = `S${s + 1}G${k + 1}`;
+      for (const i of g.shots) rows.push({ event: shots[i].event, scene: `S${s + 1}`, group: gid, moved_by_hand: touched.has(i), scene_mates_changed: mv[i].scene, group_mates_changed: mv[i].group });
+      return { id: gid, shots: g.shots.map(i => shots[i].event) };
+    }),
+  }));
+  rows.sort((a, b) => a.event - b.event);
+  return {
+    dataset: DATA.dataset, labeled_at: new Date().toISOString(),
+    seed: { source: DATA.seed.source, model: DATA.seed.model,
+            scenes: DATA.seed.scenes.length, groups: DATA.seed.scenes.reduce((a, g) => a + g.length, 0) },
+    changed_from_seed: {
+      moved_by_hand: [...touched].sort((x, y) => x - y).map(i => shots[i].event),
+      scene_mates_changed: rows.filter(r => r.scene_mates_changed).map(r => r.event),
+      group_mates_changed: rows.filter(r => r.group_mates_changed).map(r => r.event),
+    },
+    shots: rows, scenes: out, unsorted: unsortedList().map(i => shots[i].event),
+  };
+}
+function importObject(obj) {
+  snapshot();
+  scenes = (obj.scenes ?? []).map(sc => ({
+    uid: uid(), name: sc.name || "",
+    groups: (sc.groups ?? []).map(g => ({ uid: uid(), shots: g.shots.map(e => idx.get(e)).filter(i => i !== undefined) })),
+  }));
+  selected.clear(); render(); save();
+  toast(`Imported ${obj.shots?.length ?? 0} labels`);
+}
+
+// ---- Moves -----------------------------------------------------------------
+function removeShots(set) {
+  for (const sc of scenes) for (const g of sc.groups) g.shots = g.shots.filter(i => !set.has(i));
+}
+function moveSelectionTo(target) {   // {kind:"group", scene, group} | {kind:"newgroup", scene} | {kind:"newscene"} | {kind:"unsorted"}
+  const picked = [...selected];
+  if (!picked.length) { toast("Select shots first"); return; }
+  snapshot();
+  for (const i of picked) touched.add(i);
+  removeShots(selected);
+  if (target.kind === "group") { target.group.shots.push(...picked); activeScene = target.scene.uid; activeGroup = target.group.uid; }
+  else if (target.kind === "newgroup") { const g = { uid: uid(), shots: picked }; target.scene.groups.push(g); activeScene = target.scene.uid; activeGroup = g.uid; }
+  else if (target.kind === "newscene") {
+    const g = { uid: uid(), shots: picked }; const sc = { uid: uid(), name: "", groups: [g] };
+    scenes.push(sc); activeScene = sc.uid; activeGroup = g.uid;
+  }
+  selected.clear(); render(); save();
+}
+function moveGroupTo(group, target) {
+  snapshot();
+  for (const i of group.shots) touched.add(i);
+  for (const sc of scenes) sc.groups = sc.groups.filter(g => g !== group);
+  if (target.kind === "newscene") scenes.push({ uid: uid(), name: "", groups: [group] });
+  else target.scene.groups.push(group);
+  render(); save();
+}
+function mergeScenes(from, into) {
+  if (from === into) return;
+  snapshot();
+  for (const g of from.groups) for (const i of g.shots) touched.add(i);
+  into.groups.push(...from.groups); from.groups = [];
+  render(); save();
+}
+function findScene(u) { return scenes.find(sc => sc.uid === u); }
+function findGroup(u) { for (const sc of scenes) { const g = sc.groups.find(g => g.uid === u); if (g) return { scene: sc, group: g }; } return null; }
+
+// ---- Selection -------------------------------------------------------------
+function visibleOrder(i) {
+  const where = placement().get(i);
+  return where ? where.group.shots.slice().sort((a, b) => a - b) : unsortedList();
+}
+function clickShot(i, ev) {
+  if (ev.shiftKey && anchor !== null) {
+    const order = visibleOrder(i);
+    const a = order.indexOf(anchor), b = order.indexOf(i);
+    if (a >= 0 && b >= 0) for (const k of order.slice(Math.min(a, b), Math.max(a, b) + 1)) selected.add(k);
+    else selected.add(i);
+  } else if (ev.metaKey || ev.ctrlKey) {
+    selected.has(i) ? selected.delete(i) : selected.add(i);
+  } else {
+    if (selected.size === 1 && selected.has(i)) selected.clear(); else { selected.clear(); selected.add(i); }
+  }
+  anchor = i;
+  const where = placement().get(i);
+  if (where) { activeScene = where.scene.uid; activeGroup = where.group.uid; }
+  paint();
+}
+function selectOnly(i) {
+  selected.clear(); selected.add(i); anchor = i;
+  const where = placement().get(i);
+  if (where) { activeScene = where.scene.uid; activeGroup = where.group.uid; }
+  paint();
+  buttons[i].scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+}
+function nextDoubtful() {
+  const list = doubts.map((d, i) => d ? i : -1).filter(i => i >= 0);
+  if (!list.length) { toast("Nothing doubtful left"); return; }
+  const after = list.find(i => anchor === null || i > anchor);
+  const i = after ?? list[0];
+  selectOnly(i);
+  toast(`${key(shots[i].event)}: ${doubts[i].join(" · ")}`);
+}
+
+// ---- Rendering -------------------------------------------------------------
+const board = document.getElementById("board");
+const tape = document.getElementById("tape");
+const undoBtn = document.getElementById("undoBtn");
+const savedAt = document.getElementById("savedAt");
+const toastEl = document.getElementById("toast");
+let toastTimer;
+function toast(msg, ms = 2200) { toastEl.textContent = msg; toastEl.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms); }
+
+const buttons = shots.map((s, i) => {
+  const btn = document.createElement("button");
+  btn.className = "shot"; btn.dataset.i = i; btn.draggable = true;
+  btn.setAttribute("aria-label", `Shot ${key(s.event)}, record ${timecode(s.recIn)}`);
+  btn.innerHTML = `<img src="${s.thumb}" alt="" loading="lazy"><div class="mark"></div><div class="meta"><span class="ev">${key(s.event)}</span><span>${timecode(s.recIn)}</span></div>`;
+  btn.addEventListener("click", ev => clickShot(i, ev));
+  btn.addEventListener("dblclick", () => openLightbox(i));
+  btn.addEventListener("dragstart", ev => {
+    if (!selected.has(i)) { selected.clear(); selected.add(i); paint(); }
+    ev.dataTransfer.setData("text/plain", "shots");
+    ev.dataTransfer.effectAllowed = "move";
+    for (const k of selected) buttons[k].classList.add("dragging");
+  });
+  btn.addEventListener("dragend", () => buttons.forEach(b => b.classList.remove("dragging")));
+  return btn;
+});
+
+let dragPayload = null;   // {kind:"group", uid} | {kind:"scene", uid}
+function dropzone(el, target) {
+  el.addEventListener("dragover", ev => { ev.preventDefault(); ev.stopPropagation(); el.classList.add("over"); });
+  el.addEventListener("dragleave", () => el.classList.remove("over"));
+  el.addEventListener("drop", ev => {
+    ev.preventDefault(); ev.stopPropagation(); el.classList.remove("over");
+    const kind = ev.dataTransfer.getData("text/plain");
+    if (kind === "shots") { if (target.kind === "scene") moveSelectionTo({ kind: "newgroup", scene: target.scene }); else moveSelectionTo(target); }
+    else if (kind === "group" && dragPayload) {
+      const found = findGroup(dragPayload.uid); if (!found) return;
+      if (target.kind === "unsorted") { snapshot(); for (const sc of scenes) sc.groups = sc.groups.filter(g => g !== found.group); render(); save(); }
+      else if (target.kind === "newscene") moveGroupTo(found.group, target);
+      else if (target.scene && target.scene !== found.scene) moveGroupTo(found.group, { kind: "scene", scene: target.scene });
+    } else if (kind === "scene" && dragPayload) {
+      const from = findScene(dragPayload.uid); if (!from) return;
+      if (target.kind === "unsorted") { snapshot(); from.groups = []; render(); save(); }
+      else if (target.scene) mergeScenes(from, target.scene);
+    }
+    dragPayload = null;
+  });
+}
+dropzone(tape, { kind: "unsorted" });
+
+function render() {
+  normalized();
+  const where = placement();
+  moves = moveState();
+  doubts = doubtState();
+  tape.replaceChildren(...unsortedList().map(i => buttons[i]));
+  const cols = scenes.map((sc, s) => {
+    const col = document.createElement("section");
+    col.className = "col"; col.dataset.uid = sc.uid; col.style.setProperty("--h", HUES[s % HUES.length]);
+    const count = sc.groups.reduce((a, g) => a + g.shots.length, 0);
+    const head = document.createElement("div"); head.className = "col-head"; head.draggable = true;
+    head.innerHTML = `<h2>S${s + 1}</h2><input placeholder="name this scene" value="${esc(sc.name || "")}"><span>${count}</span>`;
+    const input = head.querySelector("input");
+    input.addEventListener("change", ev => { sc.name = ev.target.value; save(); });
+    input.addEventListener("keydown", ev => ev.stopPropagation());
+    input.addEventListener("mousedown", ev => ev.stopPropagation());
+    head.addEventListener("dragstart", ev => { dragPayload = { kind: "scene", uid: sc.uid }; ev.dataTransfer.setData("text/plain", "scene"); });
+    head.addEventListener("click", ev => { if (ev.target.tagName !== "INPUT") { activeScene = sc.uid; activeGroup = sc.groups[0]?.uid ?? null; paint(); } });
+    col.append(head);
+    sc.groups.forEach((g, k) => {
+      const block = document.createElement("div");
+      block.className = "grade" + (k % 2 ? " alt" : ""); block.dataset.uid = g.uid;
+      const gh = document.createElement("div"); gh.className = "grade-head"; gh.draggable = true;
+      gh.innerHTML = `<b>G${k + 1}</b><span>${g.shots.length} shot${g.shots.length === 1 ? "" : "s"} <button type="button" title="Send this group back to unsorted">×</button></span>`;
+      gh.querySelector("button").addEventListener("click", ev => { ev.stopPropagation(); snapshot(); sc.groups = sc.groups.filter(x => x !== g); render(); save(); });
+      gh.addEventListener("dragstart", ev => { dragPayload = { kind: "group", uid: g.uid }; ev.dataTransfer.setData("text/plain", "group"); ev.stopPropagation(); });
+      gh.addEventListener("click", () => { activeScene = sc.uid; activeGroup = g.uid; paint(); });
+      block.append(gh, ...g.shots.map(i => buttons[i]));
+      dropzone(block, { kind: "group", scene: sc, group: g });
+      col.append(block);
+    });
+    const ng = document.createElement("div"); ng.className = "newgroup"; ng.textContent = "+ grade group (drop or G)";
+    ng.addEventListener("click", () => moveSelectionTo({ kind: "newgroup", scene: sc }));
+    dropzone(ng, { kind: "newgroup", scene: sc });
+    col.append(ng);
+    dropzone(col, { kind: "scene", scene: sc });
+    return col;
+  });
+  const ns = document.createElement("div"); ns.className = "newscene"; ns.textContent = "+ new scene (drop or N)";
+  ns.addEventListener("click", () => moveSelectionTo({ kind: "newscene" }));
+  dropzone(ns, { kind: "newscene" });
+  masonry(cols, ns);
+  // markers
+  buttons.forEach((b, i) => {
+    const m = b.querySelector(".mark"); m.replaceChildren();
+    if (touched.has(i)) { const d = document.createElement("i"); d.className = "moved"; d.title = "moved by hand since the seed"; m.append(d); }
+    if (doubts[i]) { const d = document.createElement("i"); d.className = "doubt"; d.title = doubts[i].join("\n"); m.append(d); }
+  });
+  // counts
+  document.getElementById("shotCount").textContent = n;
+  const labeled = where.size;
+  const lc = document.getElementById("labeledCount"); lc.textContent = `${labeled} / ${n}`; lc.classList.toggle("done", labeled === n);
+  document.getElementById("sceneCount").textContent = scenes.length;
+  document.getElementById("gradeCount").textContent = scenes.reduce((a, sc) => a + sc.groups.length, 0);
+  document.getElementById("movedCount").textContent = `${touched.size} by hand, ${moves.filter(m => m.scene || m.group).length} affected`;
+  const dc = document.getElementById("doubtCount"); const doubtN = doubts.filter(Boolean).length; dc.textContent = doubtN; dc.classList.toggle("warn", doubtN > 0);
+  document.getElementById("tapeCount").textContent = `${n - labeled} left`;
+  paint();
+}
+function masonry(cols, tail) {
+  const width = board.clientWidth || document.body.clientWidth;
+  const count = Math.max(1, Math.floor((width + 12) / (240 + 12)));
+  const stacks = Array.from({ length: count }, () => { const el = document.createElement("div"); el.className = "stack"; el.height = 0; return el; });
+  for (const col of cols) {
+    const target = stacks.reduce((a, b) => (b.height < a.height ? b : a));
+    target.append(col); target.height += 60 + col.querySelectorAll(".shot").length * 70 + col.querySelectorAll(".grade").length * 30;
+  }
+  const target = stacks.reduce((a, b) => (b.height < a.height ? b : a));
+  target.append(tail);
+  board.replaceChildren(...stacks);
+}
+// Jev's view: with one shot selected, badge every other placed shot with P(same):
+// grade P inside the same current scene, scene P everywhere else. Dim the unlikely ones.
+function paint() {
+  buttons.forEach((b, i) => b.classList.toggle("selected", selected.has(i)));
+  for (const col of board.querySelectorAll(".col")) col.classList.toggle("active", col.dataset.uid === activeScene);
+  for (const g of board.querySelectorAll(".grade")) g.style.outline = g.dataset.uid === activeGroup ? "2px solid var(--accent)" : "";
+  buttons.forEach(b => { b.querySelector(".badge")?.remove(); b.style.removeProperty("--o"); });
+  const focus = showJev && selected.size === 1;
+  board.classList.toggle("focus", focus); tape.classList.toggle("focus", focus);
+  if (!focus) return;
+  const s = [...selected][0];
+  const where = placement();
+  const mine = where.get(s)?.scene;
+  buttons.forEach((b, i) => {
+    if (i === s) return;
+    const sameScene = mine && where.get(i)?.scene === mine;
+    const p = sameScene ? gradeP[s][i] : sceneP[s][i];
+    const badge = document.createElement("span");
+    badge.className = "badge" + (p >= 0.5 ? " high" : "");
+    badge.textContent = p.toFixed(2);
+    b.append(badge);
+    b.style.setProperty("--o", String(0.35 + 0.65 * p));
+  });
+}
+const esc = t => t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---- Lightbox --------------------------------------------------------------
+let lightbox = null, lightboxIndex = null;
+function openLightbox(i) {
+  closeLightbox();
+  lightboxIndex = i;
+  const s = shots[i];
+  lightbox = document.createElement("div"); lightbox.className = "lightbox";
+  lightbox.innerHTML = `<img src="${s.full}" alt=""><div class="cap">${key(s.event)}<span>${timecode(s.recIn)} to ${timecode(s.recOut)}</span><span>${placementLabel(i)}</span>${doubts[i] ? `<span style="color:var(--doubt)">${esc(doubts[i].join(" · "))}</span>` : ""}<span>← → to step, Esc to close</span></div>`;
+  lightbox.addEventListener("click", closeLightbox);
+  document.body.append(lightbox);
+}
+function placementLabel(i) {
+  normalized();
+  for (let s = 0; s < scenes.length; s++) for (let k = 0; k < scenes[s].groups.length; k++) if (scenes[s].groups[k].shots.includes(i)) return `S${s + 1}G${k + 1}${scenes[s].name ? " " + scenes[s].name : ""}`;
+  return "unsorted";
+}
+function closeLightbox() { if (lightbox) { lightbox.remove(); lightbox = null; } }
+function stepLightbox(d) { if (lightboxIndex === null) return; const j = Math.min(n - 1, Math.max(0, lightboxIndex + d)); openLightbox(j); selectOnly(j); }
+
+// ---- Keys and buttons ------------------------------------------------------
+document.addEventListener("keydown", ev => {
+  if (ev.target.tagName === "INPUT") return;
+  if (lightbox) {
+    if (ev.key === "Escape" || ev.key === " ") { ev.preventDefault(); closeLightbox(); }
+    else if (ev.key === "ArrowRight") stepLightbox(1);
+    else if (ev.key === "ArrowLeft") stepLightbox(-1);
+    return;
+  }
+  const k = ev.key.toLowerCase();
+  if (k === "n") moveSelectionTo({ kind: "newscene" });
+  else if (k === "g") { const sc = findScene(activeScene); sc ? moveSelectionTo({ kind: "newgroup", scene: sc }) : toast("Click a scene first"); }
+  else if (ev.key === "Enter") { const f = findGroup(activeGroup); f ? moveSelectionTo({ kind: "group", scene: f.scene, group: f.group }) : toast("Click a grade group first"); }
+  else if (k === "u") moveSelectionTo({ kind: "unsorted" });
+  else if (k === "d") nextDoubtful();
+  else if (k === "p") { showJev = !showJev; jevBtn.setAttribute("aria-pressed", String(showJev)); paint(); }
+  else if (k === "z") { ev.preventDefault(); undo(); }
+  else if (ev.key === "Escape") { selected.clear(); paint(); }
+  else if (ev.key === " ") { ev.preventDefault(); if (anchor !== null) openLightbox(anchor); }
+  else if (ev.key === "ArrowRight" || ev.key === "ArrowLeft") {
+    if (selected.size !== 1) return;
+    const cur = [...selected][0]; const j = Math.min(n - 1, Math.max(0, cur + (ev.key === "ArrowRight" ? 1 : -1)));
+    selectOnly(j);
+  }
+});
+const jevBtn = document.getElementById("jevBtn");
+jevBtn.addEventListener("click", () => { showJev = !showJev; jevBtn.setAttribute("aria-pressed", String(showJev)); paint(); });
+document.getElementById("doubtBtn").addEventListener("click", nextDoubtful);
+document.getElementById("doubtTh").addEventListener("input", ev => { doubtTh = Number(ev.target.value); document.getElementById("doubtThValue").textContent = doubtTh.toFixed(2); render(); });
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const obj = exportObject();
+  const blob = new Blob([JSON.stringify(obj, null, 1)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${DATA.dataset}_labels.json`; a.click();
+  toast(obj.unsorted.length ? `Exported with ${obj.unsorted.length} unsorted` : `Exported, all shots labeled, ${obj.changed_from_seed.moved_by_hand.length} moved by hand`);
+});
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  await navigator.clipboard.writeText(JSON.stringify(exportObject(), null, 1)); toast("JSON copied");
+});
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("fileInput").click());
+document.getElementById("fileInput").addEventListener("change", ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  f.text().then(t => importObject(JSON.parse(t))).catch(() => toast("Could not read that file"));
+  ev.target.value = "";
+});
+undoBtn.addEventListener("click", undo);
+document.getElementById("collapseBtn").addEventListener("click", ev => { tape.classList.toggle("collapsed"); ev.target.textContent = tape.classList.contains("collapsed") ? "Large tape" : "Small tape"; });
+document.getElementById("reseedBtn").addEventListener("click", () => {
+  if (!confirm("Replace your labels with Jev's grouping? Export first if you want to keep them.")) return;
+  snapshot(); scenes = seedScenes(); touched = new Set(); selected.clear(); render(); save(); toast("Reseeded from Jev");
+});
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!confirm("Clear all labels and start from an empty board? Export first if you want to keep them.")) return;
+  snapshot(); scenes = []; touched = new Set(); selected.clear(); render(); save();
+});
+addEventListener("resize", () => render());
+
+if (!load()) { scenes = seedScenes(); save(); setTimeout(() => toast("Started from Jev's grouping. Fix what is wrong. Press D to step through the shots Jev was unsure about.", 5000), 300); }
+render();
+</script>
+</body>
+</html>

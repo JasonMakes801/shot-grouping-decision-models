@@ -1,0 +1,16 @@
+{
+ "kind": "grade",
+ "model": "cloudflare/clef",
+ "pairs": 877,
+ "pairs_wanted": 877,
+ "requests": 684,
+ "errors": 0,
+ "input_tokens": 857223,
+ "cost": 0.2057,
+ "seconds": 102.8,
+ "median_request_seconds": 1.72,
+ "workers": 12,
+ "image_size": "784x326",
+ "max_image_bytes": 44000,
+ "stills_reencoded": 67
+}

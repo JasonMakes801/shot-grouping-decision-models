@@ -1,0 +1,1365 @@
+{
+ "dataset": "tos",
+ "labeled_at": "2026-11-08T07:56:01+00:00",
+ "labeled_by": "Jev's grouping corrected by hand: six shots moved after reviewing contact sheets of every scene, 2026-11-08 to 2026-11-10",
+ "seed": {
+  "source": "scene2_groups.json (scene pass, average linkage, cut 0.6, the board's default) and grade_pairs.json (grade pass, average linkage, cut 0.5)",
+  "model": "typesafe/jev-1.14-20261014",
+  "scenes": 23,
+  "groups": 69
+ },
+ "changed_from_seed": {
+  "moved_by_hand": [
+   3,
+   4,
+   30,
+   33,
+   107,
+   117
+  ],
+  "notes": {
+   "30": "church interior with the organ, same cool light as 029; Jev had it with 032",
+   "33": "overgrown street exterior, same location and light as 032; Jev had it alone",
+   "117": "robot wreck in the warm golden light of the ending, 119 to 125; Jev had it with the neutral daylight church shots",
+   "4": "wide of the launch, same event and flare light as 002 and 003; Jev had it alone",
+   "107": "gun insert inside the golden rooftop fight, same place and moment as 106 and 108; Jev had it alone. Judgment call",
+   "3": "grade group merge: same thrusters from the same side as 002, 003 a touch lower and brighter"
+  }
+ },
+ "left_as_jev_had_it": {
+  "barley_room_three_shot_vs_two_shot": "G2 (034, 036, 042, 044) and G7 (075, 088, 090, 114, 124) are the same axis at different sizes. Kept split pending Jason's call."
+ },
+ "shots": [
+  {
+   "event": 2,
+   "scene": "S1",
+   "group": "S1G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 3,
+   "scene": "S1",
+   "group": "S1G1",
+   "moved_by_hand": true
+  },
+  {
+   "event": 4,
+   "scene": "S1",
+   "group": "S1G2",
+   "moved_by_hand": true
+  },
+  {
+   "event": 5,
+   "scene": "S2",
+   "group": "S2G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 6,
+   "scene": "S3",
+   "group": "S3G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 7,
+   "scene": "S3",
+   "group": "S3G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 8,
+   "scene": "S3",
+   "group": "S3G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 9,
+   "scene": "S4",
+   "group": "S4G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 10,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 11,
+   "scene": "S4",
+   "group": "S4G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 12,
+   "scene": "S5",
+   "group": "S5G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 14,
+   "scene": "S6",
+   "group": "S6G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 15,
+   "scene": "S6",
+   "group": "S6G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 16,
+   "scene": "S6",
+   "group": "S6G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 17,
+   "scene": "S6",
+   "group": "S6G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 18,
+   "scene": "S6",
+   "group": "S6G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 19,
+   "scene": "S6",
+   "group": "S6G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 20,
+   "scene": "S6",
+   "group": "S6G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 21,
+   "scene": "S6",
+   "group": "S6G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 22,
+   "scene": "S6",
+   "group": "S6G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 23,
+   "scene": "S6",
+   "group": "S6G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 24,
+   "scene": "S6",
+   "group": "S6G8",
+   "moved_by_hand": false
+  },
+  {
+   "event": 25,
+   "scene": "S6",
+   "group": "S6G8",
+   "moved_by_hand": false
+  },
+  {
+   "event": 26,
+   "scene": "S6",
+   "group": "S6G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 27,
+   "scene": "S6",
+   "group": "S6G8",
+   "moved_by_hand": false
+  },
+  {
+   "event": 28,
+   "scene": "S6",
+   "group": "S6G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 29,
+   "scene": "S7",
+   "group": "S7G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 30,
+   "scene": "S7",
+   "group": "S7G2",
+   "moved_by_hand": true
+  },
+  {
+   "event": 31,
+   "scene": "S8",
+   "group": "S8G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 32,
+   "scene": "S9",
+   "group": "S9G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 33,
+   "scene": "S9",
+   "group": "S9G2",
+   "moved_by_hand": true
+  },
+  {
+   "event": 34,
+   "scene": "S8",
+   "group": "S8G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 35,
+   "scene": "S10",
+   "group": "S10G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 36,
+   "scene": "S8",
+   "group": "S8G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 37,
+   "scene": "S4",
+   "group": "S4G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 38,
+   "scene": "S11",
+   "group": "S11G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 39,
+   "scene": "S4",
+   "group": "S4G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 40,
+   "scene": "S12",
+   "group": "S12G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 41,
+   "scene": "S12",
+   "group": "S12G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 42,
+   "scene": "S8",
+   "group": "S8G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 43,
+   "scene": "S12",
+   "group": "S12G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 44,
+   "scene": "S8",
+   "group": "S8G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 45,
+   "scene": "S12",
+   "group": "S12G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 46,
+   "scene": "S2",
+   "group": "S2G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 47,
+   "scene": "S8",
+   "group": "S8G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 48,
+   "scene": "S4",
+   "group": "S4G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 49,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 50,
+   "scene": "S4",
+   "group": "S4G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 51,
+   "scene": "S2",
+   "group": "S2G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 52,
+   "scene": "S2",
+   "group": "S2G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 53,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 54,
+   "scene": "S2",
+   "group": "S2G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 55,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 56,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 57,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 58,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 59,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 60,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 61,
+   "scene": "S13",
+   "group": "S13G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 62,
+   "scene": "S13",
+   "group": "S13G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 63,
+   "scene": "S14",
+   "group": "S14G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 64,
+   "scene": "S8",
+   "group": "S8G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 65,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 66,
+   "scene": "S2",
+   "group": "S2G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 67,
+   "scene": "S4",
+   "group": "S4G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 68,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 69,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 70,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 71,
+   "scene": "S8",
+   "group": "S8G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 72,
+   "scene": "S8",
+   "group": "S8G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 73,
+   "scene": "S2",
+   "group": "S2G8",
+   "moved_by_hand": false
+  },
+  {
+   "event": 74,
+   "scene": "S2",
+   "group": "S2G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 75,
+   "scene": "S8",
+   "group": "S8G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 76,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 77,
+   "scene": "S4",
+   "group": "S4G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 78,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 79,
+   "scene": "S4",
+   "group": "S4G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 80,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 81,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 82,
+   "scene": "S2",
+   "group": "S2G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 83,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 84,
+   "scene": "S2",
+   "group": "S2G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 85,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 86,
+   "scene": "S2",
+   "group": "S2G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 87,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 88,
+   "scene": "S8",
+   "group": "S8G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 89,
+   "scene": "S2",
+   "group": "S2G9",
+   "moved_by_hand": false
+  },
+  {
+   "event": 90,
+   "scene": "S8",
+   "group": "S8G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 91,
+   "scene": "S2",
+   "group": "S2G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 92,
+   "scene": "S2",
+   "group": "S2G10",
+   "moved_by_hand": false
+  },
+  {
+   "event": 93,
+   "scene": "S2",
+   "group": "S2G11",
+   "moved_by_hand": false
+  },
+  {
+   "event": 94,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 95,
+   "scene": "S15",
+   "group": "S15G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 96,
+   "scene": "S8",
+   "group": "S8G8",
+   "moved_by_hand": false
+  },
+  {
+   "event": 97,
+   "scene": "S14",
+   "group": "S14G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 98,
+   "scene": "S14",
+   "group": "S14G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 99,
+   "scene": "S14",
+   "group": "S14G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 100,
+   "scene": "S16",
+   "group": "S16G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 101,
+   "scene": "S16",
+   "group": "S16G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 102,
+   "scene": "S16",
+   "group": "S16G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 103,
+   "scene": "S16",
+   "group": "S16G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 104,
+   "scene": "S16",
+   "group": "S16G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 105,
+   "scene": "S17",
+   "group": "S17G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 106,
+   "scene": "S14",
+   "group": "S14G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 107,
+   "scene": "S14",
+   "group": "S14G5",
+   "moved_by_hand": true
+  },
+  {
+   "event": 108,
+   "scene": "S14",
+   "group": "S14G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 109,
+   "scene": "S17",
+   "group": "S17G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 110,
+   "scene": "S14",
+   "group": "S14G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 111,
+   "scene": "S16",
+   "group": "S16G5",
+   "moved_by_hand": false
+  },
+  {
+   "event": 112,
+   "scene": "S14",
+   "group": "S14G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 113,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 114,
+   "scene": "S8",
+   "group": "S8G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 115,
+   "scene": "S2",
+   "group": "S2G4",
+   "moved_by_hand": false
+  },
+  {
+   "event": 116,
+   "scene": "S2",
+   "group": "S2G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 117,
+   "scene": "S18",
+   "group": "S18G1",
+   "moved_by_hand": true
+  },
+  {
+   "event": 118,
+   "scene": "S19",
+   "group": "S19G1",
+   "moved_by_hand": false
+  },
+  {
+   "event": 119,
+   "scene": "S18",
+   "group": "S18G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 120,
+   "scene": "S4",
+   "group": "S4G6",
+   "moved_by_hand": false
+  },
+  {
+   "event": 121,
+   "scene": "S4",
+   "group": "S4G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 122,
+   "scene": "S18",
+   "group": "S18G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 123,
+   "scene": "S18",
+   "group": "S18G2",
+   "moved_by_hand": false
+  },
+  {
+   "event": 124,
+   "scene": "S8",
+   "group": "S8G7",
+   "moved_by_hand": false
+  },
+  {
+   "event": 125,
+   "scene": "S18",
+   "group": "S18G3",
+   "moved_by_hand": false
+  },
+  {
+   "event": 129,
+   "scene": "S20",
+   "group": "S20G1",
+   "moved_by_hand": false
+  }
+ ],
+ "scenes": [
+  {
+   "id": "S1",
+   "name": "launch",
+   "groups": [
+    {
+     "id": "S1G1",
+     "shots": [
+      2,
+      3
+     ]
+    },
+    {
+     "id": "S1G2",
+     "shots": [
+      4
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S2",
+   "name": "bridge, overcast day",
+   "groups": [
+    {
+     "id": "S2G1",
+     "shots": [
+      5,
+      66
+     ]
+    },
+    {
+     "id": "S2G2",
+     "shots": [
+      46
+     ]
+    },
+    {
+     "id": "S2G3",
+     "shots": [
+      51
+     ]
+    },
+    {
+     "id": "S2G4",
+     "shots": [
+      52,
+      115
+     ]
+    },
+    {
+     "id": "S2G5",
+     "shots": [
+      54
+     ]
+    },
+    {
+     "id": "S2G6",
+     "shots": [
+      55,
+      56,
+      57,
+      59,
+      60,
+      68,
+      69,
+      116
+     ]
+    },
+    {
+     "id": "S2G7",
+     "shots": [
+      58,
+      65,
+      70,
+      81,
+      83,
+      85,
+      91
+     ]
+    },
+    {
+     "id": "S2G8",
+     "shots": [
+      73
+     ]
+    },
+    {
+     "id": "S2G9",
+     "shots": [
+      74,
+      82,
+      84,
+      86,
+      89
+     ]
+    },
+    {
+     "id": "S2G10",
+     "shots": [
+      92
+     ]
+    },
+    {
+     "id": "S2G11",
+     "shots": [
+      93
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S3",
+   "name": "title cards",
+   "groups": [
+    {
+     "id": "S3G1",
+     "shots": [
+      6,
+      8
+     ]
+    },
+    {
+     "id": "S3G2",
+     "shots": [
+      7
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S4",
+   "name": "lab",
+   "groups": [
+    {
+     "id": "S4G1",
+     "shots": [
+      9
+     ]
+    },
+    {
+     "id": "S4G2",
+     "shots": [
+      10,
+      49,
+      53,
+      76,
+      78,
+      80,
+      87,
+      94,
+      113,
+      121
+     ]
+    },
+    {
+     "id": "S4G3",
+     "shots": [
+      11,
+      39,
+      67
+     ]
+    },
+    {
+     "id": "S4G4",
+     "shots": [
+      37
+     ]
+    },
+    {
+     "id": "S4G5",
+     "shots": [
+      48,
+      77,
+      79
+     ]
+    },
+    {
+     "id": "S4G6",
+     "shots": [
+      50,
+      120
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S5",
+   "name": "brain room",
+   "groups": [
+    {
+     "id": "S5G1",
+     "shots": [
+      12
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S6",
+   "name": "rooftop, blue dusk",
+   "groups": [
+    {
+     "id": "S6G1",
+     "shots": [
+      14
+     ]
+    },
+    {
+     "id": "S6G2",
+     "shots": [
+      15
+     ]
+    },
+    {
+     "id": "S6G3",
+     "shots": [
+      16
+     ]
+    },
+    {
+     "id": "S6G4",
+     "shots": [
+      17,
+      23,
+      26
+     ]
+    },
+    {
+     "id": "S6G5",
+     "shots": [
+      18,
+      20,
+      22
+     ]
+    },
+    {
+     "id": "S6G6",
+     "shots": [
+      19
+     ]
+    },
+    {
+     "id": "S6G7",
+     "shots": [
+      21
+     ]
+    },
+    {
+     "id": "S6G8",
+     "shots": [
+      24,
+      25,
+      27
+     ]
+    },
+    {
+     "id": "S6G9",
+     "shots": [
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S7",
+   "name": "church interior, cool",
+   "groups": [
+    {
+     "id": "S7G1",
+     "shots": [
+      29
+     ]
+    },
+    {
+     "id": "S7G2",
+     "shots": [
+      30
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S8",
+   "name": "Barley's room, tungsten",
+   "groups": [
+    {
+     "id": "S8G1",
+     "shots": [
+      31
+     ]
+    },
+    {
+     "id": "S8G2",
+     "shots": [
+      34,
+      36,
+      42,
+      44
+     ]
+    },
+    {
+     "id": "S8G3",
+     "shots": [
+      47
+     ]
+    },
+    {
+     "id": "S8G4",
+     "shots": [
+      64
+     ]
+    },
+    {
+     "id": "S8G5",
+     "shots": [
+      71
+     ]
+    },
+    {
+     "id": "S8G6",
+     "shots": [
+      72
+     ]
+    },
+    {
+     "id": "S8G7",
+     "shots": [
+      75,
+      88,
+      90,
+      114,
+      124
+     ]
+    },
+    {
+     "id": "S8G8",
+     "shots": [
+      96
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S9",
+   "name": "ruined house exterior",
+   "groups": [
+    {
+     "id": "S9G1",
+     "shots": [
+      32
+     ]
+    },
+    {
+     "id": "S9G2",
+     "shots": [
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S10",
+   "name": "rooftop close-up, blue",
+   "groups": [
+    {
+     "id": "S10G1",
+     "shots": [
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S11",
+   "name": "wire effects",
+   "groups": [
+    {
+     "id": "S11G1",
+     "shots": [
+      38
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S12",
+   "name": "projection, washed daylight",
+   "groups": [
+    {
+     "id": "S12G1",
+     "shots": [
+      40
+     ]
+    },
+    {
+     "id": "S12G2",
+     "shots": [
+      41
+     ]
+    },
+    {
+     "id": "S12G3",
+     "shots": [
+      43,
+      45
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S13",
+   "name": "golden exterior",
+   "groups": [
+    {
+     "id": "S13G1",
+     "shots": [
+      61
+     ]
+    },
+    {
+     "id": "S13G2",
+     "shots": [
+      62
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S14",
+   "name": "rooftop, golden",
+   "groups": [
+    {
+     "id": "S14G1",
+     "shots": [
+      63
+     ]
+    },
+    {
+     "id": "S14G2",
+     "shots": [
+      97,
+      98
+     ]
+    },
+    {
+     "id": "S14G3",
+     "shots": [
+      99
+     ]
+    },
+    {
+     "id": "S14G4",
+     "shots": [
+      106,
+      108,
+      112
+     ]
+    },
+    {
+     "id": "S14G5",
+     "shots": [
+      107
+     ]
+    },
+    {
+     "id": "S14G6",
+     "shots": [
+      110
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S15",
+   "name": "sparks",
+   "groups": [
+    {
+     "id": "S15G1",
+     "shots": [
+      95
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S16",
+   "name": "church interior, daylight",
+   "groups": [
+    {
+     "id": "S16G1",
+     "shots": [
+      100
+     ]
+    },
+    {
+     "id": "S16G2",
+     "shots": [
+      101
+     ]
+    },
+    {
+     "id": "S16G3",
+     "shots": [
+      102,
+      104
+     ]
+    },
+    {
+     "id": "S16G4",
+     "shots": [
+      103
+     ]
+    },
+    {
+     "id": "S16G5",
+     "shots": [
+      111
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S17",
+   "name": "night street, yellow lights",
+   "groups": [
+    {
+     "id": "S17G1",
+     "shots": [
+      105,
+      109
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S18",
+   "name": "ending, warm",
+   "groups": [
+    {
+     "id": "S18G1",
+     "shots": [
+      117
+     ]
+    },
+    {
+     "id": "S18G2",
+     "shots": [
+      119,
+      123
+     ]
+    },
+    {
+     "id": "S18G3",
+     "shots": [
+      122,
+      125
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S19",
+   "name": "near black",
+   "groups": [
+    {
+     "id": "S19G1",
+     "shots": [
+      118
+     ]
+    }
+   ]
+  },
+  {
+   "id": "S20",
+   "name": "credits shot",
+   "groups": [
+    {
+     "id": "S20G1",
+     "shots": [
+      129
+     ]
+    }
+   ]
+  }
+ ],
+ "unsorted": []
+}

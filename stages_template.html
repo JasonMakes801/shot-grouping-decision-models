@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tears of Steel, sorted</title>
+<style>
+/* One 16:9 stage, embedded once per step of the piece (?stage=1..5). Each embed
+   starts from the state the previous step left, plays its one transition when it
+   scrolls into view, and can be replayed. Coordinates are in a 1600x900 world
+   scaled to the frame's width. Styled to the fullstate.dev page: paper, ink,
+   JetBrains Mono; color only for telling scenes apart. */
+@font-face { font-family: "JetBrains Mono"; src: url("/fonts/JetBrainsMono-latin.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+:root { --paper: #f6f0e3; --ink: #2e2419; --ink-soft: #625545; --rule: #d6cab2; --mark: #2f6f68; color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--paper); overflow: hidden; }
+#frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid var(--rule); border-radius: 6px; }
+#world { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; transform-origin: 0 0; transition: transform 1100ms cubic-bezier(0.3, 0.6, 0.2, 1); }
+.box { position: absolute; border-radius: 6px; transition: opacity 500ms; }
+.scene { border: 2px solid hsl(var(--h) 45% 40%); background: hsl(var(--h) 32% 91%); }
+.grade { border: 1px solid hsl(var(--h) 25% 66%); background: hsl(var(--h) 28% 85%); border-radius: 4px; }
+.shot { position: absolute; left: 0; top: 0; width: 160px; height: 66.7px; border-radius: 3px; transform-origin: 0 0; object-fit: cover;
+  transition: transform 900ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 400ms, box-shadow 400ms, outline-color 300ms; outline: 3px solid transparent; outline-offset: 1px; }
+.shot.dim { opacity: 0.25; }
+.shot.lift { box-shadow: 0 0 0 4px var(--mark), 0 10px 24px rgb(46 36 25 / 0.35); z-index: 5; }
+.shot.mark { outline-color: var(--ink); z-index: 4; }
+.badge { position: absolute; font: 600 15px/1 "JetBrains Mono", ui-monospace, monospace; padding: 3px 6px; border-radius: 3px; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); transition: opacity 400ms; z-index: 6; }
+.badge.high { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#chip { position: absolute; left: 12px; top: 10px; font: 400 13px/1.35 "JetBrains Mono", ui-monospace, monospace; color: var(--ink); background: rgb(246 240 227 / 0.94); border: 1px solid var(--rule); padding: 6px 10px; border-radius: 4px; max-width: 72%; transition: opacity 300ms; z-index: 10; }
+#chip b { font-weight: 700; }
+#replay { position: absolute; right: 10px; bottom: 10px; font: 400 12px "JetBrains Mono", ui-monospace, monospace; color: var(--ink); background: var(--paper); border: 1px solid var(--ink); border-radius: 4px; padding: 5px 10px; cursor: pointer; z-index: 10; opacity: 0; transition: opacity 300ms; }
+#replay.show { opacity: 1; }
+#replay:hover { background: var(--ink); color: var(--paper); }
+#replay:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="world"><div id="boxes"></div><div id="shots"></div><div id="badges"></div></div>
+  <div id="chip"></div>
+  <button id="replay" type="button">Replay</button>
+</div>
+<script>
+const DATA = /*DATA*/null;
+const W = 1600, H = 900, ASPECT = 0.417, BASE = 160;
+const STAGE = Number(new URLSearchParams(location.search).get("stage") || 1);
+const shots = DATA.shots, n = shots.length;
+const idx = new Map(shots.map((s, i) => [s.event, i]));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const world = document.getElementById("world"), boxesEl = document.getElementById("boxes"),
+  shotsEl = document.getElementById("shots"), badgesEl = document.getElementById("badges"),
+  chip = document.getElementById("chip"), replay = document.getElementById("replay");
+const sleep = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+const toIdx = groups => groups.map(g => g.map(e => idx.get(e)));
+
+// Partitions, as [scene][group][shotIndex]. A scene-only partition has one group per scene.
+const P = {
+  seed: DATA.seed.map(toIdx),
+  labels: DATA.labels.map(toIdx),
+  old: DATA.old.map(sc => [sc.map(e => idx.get(e))]),
+};
+const sceneOnly = part => part.map(sc => [sc.flat().sort((a, b) => a - b)]);
+// Stable color per scene: the labeled scene most of its shots belong to.
+const labelSceneOf = new Int32Array(n);
+P.labels.forEach((sc, s) => sc.flat().forEach(i => { labelSceneOf[i] = s; }));
+const HUES = [205, 28, 150, 330, 262, 52, 182, 0, 112, 295, 15, 240, 90, 310, 170, 45, 220, 130, 280, 70];
+function hueOf(members) {
+  const c = new Map(); members.forEach(i => c.set(labelSceneOf[i], (c.get(labelSceneOf[i]) || 0) + 1));
+  return HUES[[...c].sort((a, b) => b[1] - a[1])[0][0] % HUES.length];
+}
+
+const imgs = shots.map(s => {
+  const im = document.createElement("img"); im.className = "shot"; im.src = s.thumb; im.alt = ""; im.decoding = "async";
+  shotsEl.append(im); return im;
+});
+
+// ---- Layouts --------------------------------------------------------------
+function gridLayout() {
+  const cols = 11, rows = Math.ceil(n / cols), m = 24;
+  const t = Math.min((W - 2 * m) / (cols * 1.06), (H - 2 * m) / (rows * ASPECT * 1.14));
+  const gx = t * 0.06, gy = t * ASPECT * 0.14;
+  const ox = (W - (cols * t + (cols - 1) * gx)) / 2, oy = (H - (rows * t * ASPECT + (rows - 1) * gy)) / 2;
+  return { pos: shots.map((_, i) => ({ x: ox + (i % cols) * (t + gx), y: oy + Math.floor(i / cols) * (t * ASPECT + gy), t })), boxes: [] };
+}
+// Scenes as boxes, each a small grid of its shots; with groups, each grade group starts a new row
+// inside its scene and gets its own frame. Boxes are shelf-packed left to right in edit order.
+function packLayout(part, showGroups) {
+  const m = 20;
+  const colsOf = sc => Math.max(1, Math.min(5, Math.round(Math.sqrt(sc.flat().length * ASPECT * 1.9))));
+  function attempt(t) {
+    const gx = t * 0.05, gy = t * ASPECT * 0.1, pad = t * 0.07, gpad = showGroups ? t * 0.035 : 0, sgap = t * 0.12;
+    const th = t * ASPECT;
+    let x = m, y = m, shelf = 0; const pos = new Array(n), boxes = [];
+    for (const sc of part) {
+      const c = colsOf(sc), members = sc.flat(), hue = hueOf(members);
+      const groups = showGroups ? sc : [members];
+      // Grade groups shelf-pack inside the scene: each group box is min(size, c) shots wide,
+      // so single-shot groups sit side by side instead of each taking a whole row.
+      const cellW = t + gx, cellH = th + gy;
+      const innerW = c * cellW - gx + (showGroups ? 2 * gpad * Math.min(c, 2) : 0);
+      const placed = []; let gx0 = 0, gy0 = 0, rowH = 0;
+      for (const g of groups) {
+        const gc = Math.min(g.length, c), gr = Math.ceil(g.length / gc);
+        const gw = gc * cellW - gx + 2 * gpad, gh = gr * cellH - gy + 2 * gpad;
+        if (gx0 > 0 && gx0 + gw > innerW + 0.5) { gx0 = 0; gy0 += rowH + gy; rowH = 0; }
+        placed.push({ g, gc, x: gx0, y: gy0, w: gw, h: gh });
+        gx0 += gw + gx; rowH = Math.max(rowH, gh);
+      }
+      const usedW = Math.max(...placed.map(q => q.x + q.w));
+      const bw = usedW + 2 * pad, bh = gy0 + rowH + 2 * pad;
+      if (x + bw > W - m && x > m) { x = m; y += shelf + sgap; shelf = 0; }
+      boxes.push({ cls: "scene", x, y, w: bw, h: bh, hue });
+      for (const q of placed) {
+        const bx = x + pad + q.x, by = y + pad + q.y;
+        if (showGroups) boxes.push({ cls: "grade", x: bx, y: by, w: q.w, h: q.h, hue });
+        q.g.forEach((i, j) => { pos[i] = { x: bx + gpad + (j % q.gc) * cellW, y: by + gpad + Math.floor(j / q.gc) * cellH, t }; });
+      }
+      x += bw + sgap; shelf = Math.max(shelf, bh);
+    }
+    return { pos, boxes, height: y + shelf + m };
+  }
+  let lo = 20, hi = 400;
+  for (let k = 0; k < 30; k++) { const mid = (lo + hi) / 2; attempt(mid).height <= H ? lo = mid : hi = mid; }
+  const out = attempt(lo);
+  // center the packed block vertically
+  const dy = (H - out.height) / 2; out.pos.forEach(p => p.y += dy); out.boxes.forEach(b => b.y += dy);
+  return out;
+}
+
+// ---- Drawing --------------------------------------------------------------
+let current = null;
+function apply(layout, { boxes = true, stagger = true } = {}) {
+  current = layout;
+  imgs.forEach((im, i) => {
+    const p = layout.pos[i];
+    im.style.transitionDelay = stagger && !reduce ? `${Math.min(p.x / W * 260 + p.y / H * 160, 420)}ms` : "0ms";
+    im.style.transform = `translate(${p.x}px, ${p.y}px) scale(${p.t / BASE})`;
+  });
+  boxesEl.replaceChildren(...(boxes ? layout.boxes : []).map(b => {
+    const d = document.createElement("div"); d.className = `box ${b.cls}`; d.style.setProperty("--h", b.hue);
+    Object.assign(d.style, { left: b.x + "px", top: b.y + "px", width: b.w + "px", height: b.h + "px", opacity: 0 });
+    return d;
+  }));
+}
+const showBoxes = () => boxesEl.querySelectorAll(".box").forEach(d => d.style.opacity = 1);
+const hideBoxes = () => boxesEl.querySelectorAll(".box").forEach(d => d.style.opacity = 0);
+function say(html) { chip.style.opacity = 0; setTimeout(() => { chip.innerHTML = html; chip.style.opacity = html ? 1 : 0; }, reduce ? 0 : 200); }
+function zoomTo(members, margin = 0.12) {
+  if (!members) { world.style.transform = `scale(${frameScale})`; return; }
+  const ps = members.map(i => current.pos[i]);
+  const x0 = Math.min(...ps.map(p => p.x)), y0 = Math.min(...ps.map(p => p.y));
+  const x1 = Math.max(...ps.map(p => p.x + p.t)), y1 = Math.max(...ps.map(p => p.y + p.t * ASPECT));
+  const bw = (x1 - x0) * (1 + 2 * margin), bh = (y1 - y0) * (1 + 2 * margin);
+  const z = Math.min(W / bw, H / bh, 4);
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  world.style.transform = `scale(${frameScale}) translate(${W / 2 - cx * z}px, ${H / 2 - cy * z}px) scale(${z})`;
+}
+function badges(pairs) {   // [{i, p}]
+  badgesEl.replaceChildren(...pairs.map(({ i, p }) => {
+    const pos = current.pos[i], b = document.createElement("span");
+    b.className = "badge" + (p >= 0.5 ? " high" : ""); b.textContent = p.toFixed(2);
+    Object.assign(b.style, { left: pos.x + pos.t - 4 + "px", top: pos.y + 3 + "px", transform: `translate(-100%, 0) scale(${pos.t / 140})`, transformOrigin: "100% 0" });
+    return b;
+  }));
+}
+function clearMarks() { imgs.forEach(im => im.classList.remove("dim", "lift", "mark")); badgesEl.replaceChildren(); }
+
+// ---- Fit to frame ----------------------------------------------------------
+let frameScale = 1;
+function fit() {
+  frameScale = innerWidth / W;
+  document.getElementById("frame").style.height = H * frameScale + "px";
+  world.style.transition = "none"; world.style.transform = `scale(${frameScale})`;
+  void world.offsetWidth; world.style.transition = "";
+}
+addEventListener("resize", () => { fit(); });
+
+// ---- Stages ---------------------------------------------------------------
+const L = {
+  grid: gridLayout(),
+  oldScenes: packLayout(P.old, false),
+  scenes: packLayout(sceneOnly(P.seed), false),
+  grades: packLayout(P.seed, true),
+  labels: packLayout(P.labels, true),
+};
+const bridge = P.seed.find(sc => sc.flat().includes(idx.get(55))).flat();
+const climax = [82, 34].map(e => idx.get(e));
+const moved = DATA.moved.map(e => idx.get(e));
+
+const STAGES = {
+  1: { start() { apply(L.grid, { stagger: false }); say(`Edit order · <b>124 shots</b>, one still each`); }, async play() {} },
+  2: {
+    start() { apply(L.grid, { stagger: false }); say(`Edit order · <b>124 shots</b>`); },
+    async play() {
+      await sleep(600); say(`Pass 1 · <b>7,626</b> yes/no questions · <b>$0.068</b> · <b>5.3 s</b>`);
+      apply(L.scenes); await sleep(1300); showBoxes(); await sleep(600);
+      say(`Pass 1 · <b>${P.seed.length} scenes</b> from 7,626 questions · $0.068 · 5.3 s`);
+    },
+  },
+  3: {
+    start() { apply(L.oldScenes, { stagger: false }); showBoxes(); climax.forEach(i => imgs[i].classList.add("mark")); say(`Story-time wording · <b>${P.old.length} scenes</b> · e082 and e034 score <b>0.87</b> for the same scene`); },
+    async play() {
+      await sleep(1600); hideBoxes(); say(`Lighting wording · e082 and e034 now <b>0.02</b>`);
+      apply(L.scenes); await sleep(1300); showBoxes(); await sleep(400);
+      say(`Lighting wording · <b>${P.seed.length} scenes</b> · e082 and e034 now <b>0.02</b>`);
+    },
+  },
+  4: {
+    start() { apply(L.scenes, { stagger: false }); showBoxes(); say(`Pass 1 · <b>${P.seed.length} scenes</b>`); },
+    async play() {
+      await sleep(600); hideBoxes(); say(`Pass 2 · <b>903</b> questions inside scenes · <b>$0.011</b> · <b>2.5 s</b>`);
+      apply(L.grades); await sleep(1200); showBoxes(); await sleep(900);
+      zoomTo(bridge, 0.04); say(`The bridge scene · <b>${bridge.length} shots</b> · <b>${P.seed.find(sc => sc.flat().includes(idx.get(55))).length} grade groups</b>`);
+      await sleep(1500);
+      const ref = idx.get(58); imgs[ref].classList.add("mark");
+      bridge.filter(i => i !== ref).forEach(i => { if ((DATA.bridgeP[shots[i].event] ?? 0) < 0.5) imgs[i].classList.add("dim"); });
+      badges(bridge.filter(i => i !== ref).map(i => ({ i, p: DATA.bridgeP[shots[i].event] ?? 0 })));
+      say(`Same grade as e058? Her close-ups say yes, his say no`);
+    },
+    reset() { zoomTo(null); },
+  },
+  5: {
+    start() { apply(L.grades, { stagger: false }); showBoxes(); say(`Jev's groups · <b>${P.seed.length} scenes</b> · <b>${P.seed.reduce((a, s) => a + s.length, 0)} grade groups</b>`); },
+    async play() {
+      await sleep(800); moved.forEach(i => imgs[i].classList.add("lift")); say(`By hand · <b>6 shots</b> to move`);
+      await sleep(1300); hideBoxes(); apply(L.labels); await sleep(1300); showBoxes();
+      say(`By hand · <b>${P.labels.length} scenes</b> · <b>${P.labels.reduce((a, s) => a + s.length, 0)} grade groups</b>`);
+      await sleep(1200);
+      const church = P.labels.find(sc => sc.flat().includes(idx.get(30))).flat();
+      zoomTo(church, 0.25); say(`e030 joins e029: same church interior. Jev had matched the old man and the cool light, and put it with the ruined house`);
+      await sleep(3200); zoomTo(null);
+      say(`<b>122 of 124</b> shots in the right scene · <b>124 of 124</b> in the right grade group`);
+    },
+    reset() { zoomTo(null); },
+  },
+};
+
+const stage = STAGES[STAGE] ?? STAGES[1];
+let running = false, played = false;
+function reset() { clearMarks(); stage.reset?.(); stage.start(); }
+async function play() {
+  if (running) return; running = true; replay.classList.remove("show");
+  await stage.play(); running = false; played = true;
+  if (STAGE !== 1) replay.classList.add("show");
+}
+replay.addEventListener("click", async () => {
+  world.style.transition = "none"; imgs.forEach(im => im.style.transition = "none");
+  reset(); void world.offsetWidth; world.style.transition = ""; imgs.forEach(im => im.style.transition = "");
+  await sleep(400); play();
+});
+
+fit(); stage.start();
+imgs.forEach(im => { im.style.transition = "none"; }); void world.offsetWidth; imgs.forEach(im => { im.style.transition = ""; });
+if (reduce) { stage.play(); }
+else {
+  // play once when the embed is mostly in view (parent page scroll), or right away when opened directly
+  const io = new IntersectionObserver(es => { if (es.some(e => e.intersectionRatio > 0.6) && !played) play(); }, { threshold: [0, 0.6, 1] });
+  io.observe(document.getElementById("frame"));
+}
+</script>
+</body>
+</html>

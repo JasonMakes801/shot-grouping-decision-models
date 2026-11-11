@@ -1,0 +1,11 @@
+{
+ "kind": "grade",
+ "pairs": 7626,
+ "requests": 16,
+ "input_tokens": 1683515,
+ "cost": 0.0707,
+ "seconds": 7.2,
+ "model": "typesafe/jev-1.14-20261014",
+ "image_size": "784x326",
+ "scope": "all pairs"
+}

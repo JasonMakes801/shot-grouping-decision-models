@@ -1,0 +1,433 @@
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a storyboard wall. One column per scene, split into grade groups
+   (shots one grade could cover), on grading-suite grey so pictures read true. */
+:root {
+  --bg: #1c1d1f;
+  --panel: #242528;
+  --sub: #2c2e32;
+  --line: #3a3c41;
+  --fg: #e3e2de;
+  --muted: #8e9096;
+  --accent: #e2a74b;      /* timecode amber */
+  --accent-ink: #1c1d1f;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  padding-left: max(clamp(16px, 4vw, 56px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 4vw, 56px), env(safe-area-inset-right, 0px));
+  padding-block: clamp(20px, 4vw, 48px) 56px;
+}
+header { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; margin: 0; letter-spacing: 0.01em; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 64ch; line-height: 1.45; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); margin-top: 8px; }
+.facts b { color: var(--fg); font-weight: 500; }
+.controls { display: grid; gap: 10px; min-width: 0; }
+.control { display: grid; gap: 4px; }
+.control label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.slider-row { display: flex; align-items: center; gap: 10px; }
+.slider-row input { width: 200px; max-width: 50vw; accent-color: var(--accent); }
+.slider-row output { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--accent); min-width: 3.5ch; }
+.hint { font-size: 0.78rem; color: var(--muted); max-width: 44ch; line-height: 1.4; }
+.hint b { color: var(--fg); font-weight: 500; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button, .ghost { all: unset; cursor: pointer; font-family: var(--font-display); font-weight: 600; font-size: 0.92rem; padding: 7px 16px; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.ghost { font-weight: 500; font-size: 0.8rem; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; }
+.seg button:focus-visible, .ghost:focus-visible { outline: 2px solid var(--fg); outline-offset: -2px; }
+#details { margin-bottom: 4px; }
+
+.tape { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 8px; }
+.tape-label { grid-column: 1 / -1; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.runs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; margin-bottom: 28px; }
+.run { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.run-head { display: flex; align-items: baseline; gap: 10px; }
+.run-head .eyebrow { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+.run-head h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; margin: 0; }
+.run p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 0.85rem; max-width: 70ch; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin: 0; }
+.stats div { display: grid; gap: 2px; }
+.stats dt { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.stats dd { margin: 0; font-family: var(--font-mono); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.prompt { font-family: var(--font-mono); font-size: 0.74rem; line-height: 1.5; color: var(--fg); background: var(--bg); border-radius: 4px; padding: 8px 10px; overflow-wrap: anywhere; }
+.prompt .k { color: var(--accent); }
+.runs-total { grid-column: 1 / -1; font-size: 0.78rem; color: var(--muted); }
+.credit { font-size: 0.74rem; color: var(--muted); margin: -16px 0 24px; }
+.credit a { color: var(--fg); }
+.runs-total b { color: var(--fg); font-weight: 500; font-family: var(--font-mono); }
+/* Scenes pack into as many 220px stacks as the window fits (masonry, placed in
+   script: CSS multi-column re-balances on every layout and made animation stall). */
+.board-wrap { padding-bottom: 8px; }
+.board { display: flex; gap: 12px; align-items: flex-start; }
+.stack { flex: 1 1 0; min-width: 0; display: grid; gap: 12px; align-content: start; }
+/* Each scene gets a saturated hue (--h); its grade groups use muted tones of
+   the same hue, alternating so neighbouring groups read as separate. */
+.col { --h: 205; background: var(--panel); border: 2px solid hsl(var(--h) 78% 56%); border-radius: 7px; padding: 10px; display: grid; gap: 8px; }
+.col-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 2px 6px; border-bottom: 1px solid hsl(var(--h) 35% 32%); }
+.col-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; margin: 0; color: hsl(var(--h) 85% 70%); }
+.col-head span, .grade-head { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.grade { background: hsl(var(--h) 14% 20%); border: 1px solid hsl(var(--h) 24% 48%); border-radius: 5px; padding: 7px; display: grid; gap: 7px; }
+.grade.alt { background: hsl(var(--h) 8% 16%); border-color: hsl(var(--h) 16% 34%); }
+.grade-head { display: flex; justify-content: space-between; }
+.grade-head b { color: var(--fg); font-weight: 500; }
+
+.shot { all: unset; cursor: pointer; display: grid; gap: 3px; border-radius: 3px; position: relative; transition: opacity 0.15s; transform-origin: 0 0; }
+.shot img { display: block; width: 100%; aspect-ratio: 1568 / 650; object-fit: cover; border-radius: 3px; outline: 2px solid transparent; outline-offset: 1px; }
+.shot:focus-visible img { outline-color: var(--fg); }
+.shot.selected img { outline-color: var(--accent); }
+.meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta .ev { color: var(--fg); }
+.badge { position: absolute; top: 4px; right: 4px; font-family: var(--font-mono); font-size: 0.7rem; font-variant-numeric: tabular-nums; padding: 1px 5px; border-radius: 3px; background: var(--bg); color: var(--fg); }
+.badge.high { background: var(--accent); color: var(--accent-ink); }
+.board.focus .shot:not(.selected) { opacity: var(--o, 1); }
+.shot.moved img { outline-color: #6fc3a0; }
+.shot.moved::after { content: "moved"; position: absolute; top: 4px; left: 4px; font-family: var(--font-mono); font-size: 0.62rem; padding: 1px 5px; border-radius: 3px; background: #6fc3a0; color: #1c1d1f; }
+.legend-moved { font-size: 0.78rem; color: var(--muted); }
+.legend-moved i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #6fc3a0; margin-right: 5px; vertical-align: -1px; }
+.controls.off { opacity: 0.4; pointer-events: none; }
+
+@media (max-width: 600px) {
+  .grade { grid-template-columns: 1fr 1fr; }
+  .grade-head { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) { .shot { transition: none; } }
+</style>
+
+<!--BODY-->
+<nav class="toolbar" aria-label="View">
+  <div class="seg" role="group" aria-label="Order">
+    <button type="button" id="viewEdit" aria-pressed="true">Edit order</button>
+    <button type="button" id="viewGroups" aria-pressed="false">Group shots for grading</button>
+    <button type="button" id="viewLabels" aria-pressed="false" hidden>Corrected by hand</button>
+  </div>
+  <span class="legend-moved" id="legendMoved" hidden><i></i>moved by hand from where Jev put it</span>
+  <button type="button" class="ghost" id="detailsToggle" aria-controls="details" aria-expanded="true">Hide details</button>
+</nav>
+
+<div id="details">
+<header>
+  <div>
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{SUBTITLE}}</p>
+    <div class="facts">
+      <span>Shots <b id="shotCount">84</b></span>
+      <span>Scenes <b id="sceneCount">–</b></span>
+      <span>Grade groups <b id="gradeCount">–</b></span>
+      <span>Pairs judged <b id="pairCount">–</b></span>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="control">
+      <label for="sceneCut">Same scene when Jev is at least</label>
+      <div class="slider-row"><input id="sceneCut" type="range" min="0.3" max="0.9" step="0.05" value="0.6"><output id="sceneCutValue" for="sceneCut">0.60</output></div>
+    </div>
+    <div class="control">
+      <label for="gradeCut">Same grade when Jev is at least</label>
+      <div class="slider-row"><input id="gradeCut" type="range" min="0.3" max="0.9" step="0.05" value="0.5"><output id="gradeCutValue" for="gradeCut">0.50</output></div>
+    </div>
+    <span class="hint"><b>Click a shot</b> to see Jev's probabilities against it: same grade inside its scene, same scene everywhere else.</span>
+  </div>
+</header>
+
+<section class="runs" id="runs" aria-label="Jev runs"></section>
+{{CREDIT}}
+</div>
+
+<div class="tape" id="tape"></div>
+<div class="board-wrap" id="boardWrap" hidden><div class="board" id="board"></div></div>
+
+<script>
+const DATA = /*DATA*/null;
+const FPS = DATA.fps ?? 24;
+const shots = DATA.shots;
+const n = shots.length;
+const pad = (v, w) => String(v).padStart(w, "0");
+const key = e => pad(e, 3);
+const idx = new Map(shots.map((s, i) => [s.event, i]));
+
+// P(same) matrices. Grade pairs were only asked inside a scene, so missing
+// pairs count as 0 (different grade).
+function matrix(pairs, missing) {
+  const m = Array.from({ length: n }, () => new Float64Array(n).fill(missing));
+  for (let i = 0; i < n; i++) m[i][i] = 1;
+  for (const [pair, p] of Object.entries(pairs)) {
+    const [a, b] = pair.split("-").map(Number);
+    m[idx.get(a)][idx.get(b)] = m[idx.get(b)][idx.get(a)] = p;
+  }
+  return m;
+}
+const sceneP = matrix(DATA.scenePairs, 0);
+const gradeP = matrix(DATA.gradePairs, 0);
+
+function timecode(frames) {
+  const f = frames + (DATA.tcStartFrames ?? 0);
+  return [Math.floor(f / (3600 * FPS)), Math.floor(f / (60 * FPS)) % 60, Math.floor(f / FPS) % 60, f % FPS]
+    .map(v => pad(v, 2)).join(":");
+}
+
+// Average-linkage clustering on distance 1 - p over the given shot indices,
+// merging while the closest pair of clusters is at most 1 - cutoff apart
+// (matches group.py). Lance-Williams update: merged distances are size-weighted
+// averages, so each merge costs O(n) instead of recomputing every pair.
+function cluster(members, prob, cutoff) {
+  const m = members.length;
+  const D = members.map(i => Float64Array.from(members, j => 1 - prob[i][j]));
+  const size = new Array(m).fill(1);
+  const alive = new Array(m).fill(true);
+  const groups = members.map(i => [i]);
+  const limit = 1 - cutoff + 1e-9;
+  for (;;) {
+    let a = -1, b = -1, best = Infinity;
+    for (let x = 0; x < m; x++) {
+      if (!alive[x]) continue;
+      for (let y = x + 1; y < m; y++) {
+        if (alive[y] && D[x][y] < best) { best = D[x][y]; a = x; b = y; }
+      }
+    }
+    if (a < 0 || best > limit) break;
+    for (let k = 0; k < m; k++) {
+      if (!alive[k] || k === a || k === b) continue;
+      D[a][k] = D[k][a] = (size[a] * D[a][k] + size[b] * D[b][k]) / (size[a] + size[b]);
+    }
+    size[a] += size[b];
+    groups[a] = groups[a].concat(groups[b]);
+    alive[b] = false;
+  }
+  const clusters = groups.filter((_, x) => alive[x]);
+  clusters.forEach(c => c.sort((x, y) => x - y));
+  return clusters.sort((x, y) => x[0] - y[0]);
+}
+
+const board = document.getElementById("board");
+const tape = document.getElementById("tape");
+const boardWrap = document.getElementById("boardWrap");
+const viewEdit = document.getElementById("viewEdit");
+const viewGroups = document.getElementById("viewGroups");
+const detailsEl = document.getElementById("details");
+const detailsToggle = document.getElementById("detailsToggle");
+const HUES = [205, 28, 150, 330, 262, 52, 182, 0, 112, 295];
+
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let selected = null;
+let grouped = false;
+let mode = "edit";   // edit | jev | labels
+let sceneOf = new Int32Array(n);
+// Optional hand labels: {scenes: [{name, groups: [[event...]]}], moved: [event...]}
+const LABELS = DATA.labels ?? null;
+const movedSet = new Set((LABELS?.moved ?? []).map(e => idx.get(e)));
+const viewLabels = document.getElementById("viewLabels");
+if (LABELS) { viewLabels.hidden = false; }
+
+function shotButton(i) {
+  const s = shots[i];
+  const btn = document.createElement("button");
+  btn.className = "shot";
+  btn.dataset.i = i;
+  btn.setAttribute("aria-label", `Shot ${key(s.event)}, record ${timecode(s.recIn)}`);
+  btn.innerHTML = `<img src="${s.thumb}" alt=""><div class="meta"><span class="ev">${key(s.event)}</span><span>${timecode(s.recIn)}</span></div>`;
+  btn.addEventListener("click", () => { selected = selected === i ? null : i; paintFocus(); });
+  return btn;
+}
+
+// Scenes set off one after another, but the last starts within ~0.3 s.
+const staggerOf = (g, count) => g * Math.min(60, 300 / Math.max(1, count - 1));
+
+// One button per shot, created once and moved between layouts so each
+// thumbnail can fly from where it was to where it lands.
+const buttons = shots.map((_, i) => shotButton(i));
+const delayOf = new Float64Array(n);
+
+function layout() {
+  const sceneCut = Number(document.getElementById("sceneCut").value);
+  const gradeCut = Number(document.getElementById("gradeCut").value);
+  document.getElementById("sceneCutValue").textContent = sceneCut.toFixed(2);
+  document.getElementById("gradeCutValue").textContent = gradeCut.toFixed(2);
+  const byLabels = mode === "labels" && LABELS;
+  const labelScenes = byLabels ? LABELS.scenes.map(sc => ({ name: sc.name, groups: sc.groups.map(g => g.map(e => idx.get(e)).filter(i => i !== undefined)) })) : null;
+  const scenes = byLabels ? labelScenes.map(sc => sc.groups.flat().sort((a, b) => a - b)) : cluster(shots.map((_, i) => i), sceneP, sceneCut);
+  document.querySelector(".controls")?.classList.toggle("off", !!byLabels);
+  let gradeCount = 0;
+  const cols = scenes.map((members, g) => {
+    members.forEach((i, pos) => { sceneOf[i] = g; delayOf[i] = staggerOf(g, scenes.length) + Math.min(pos * 6, 120); });
+    const grades = byLabels ? labelScenes[g].groups : cluster(members, gradeP, gradeCut);
+    gradeCount += grades.length;
+    const col = document.createElement("section");
+    col.className = "col";
+    col.dataset.g = g;
+    col.style.setProperty("--h", HUES[g % HUES.length]);
+    const first = shots[members[0]], last = shots[members[members.length - 1]];
+    const sceneName = byLabels && labelScenes[g].name ? ` · ${labelScenes[g].name}` : "";
+    col.innerHTML = `<div class="col-head"><h2>Scene ${g + 1}</h2><span>${members.length} shot${members.length > 1 ? "s" : ""} · ${key(first.event)}–${key(last.event)}${sceneName}</span></div>`;
+    grades.forEach((grade, k) => {
+      const block = document.createElement("div");
+      block.className = "grade" + (k % 2 ? " alt" : "");
+      block.innerHTML = `<div class="grade-head"><b>Grade ${g + 1}.${k + 1}</b><span>${grade.length} shot${grade.length > 1 ? "s" : ""}</span></div>`;
+      if (grouped) grade.forEach(i => block.appendChild(buttons[i]));
+      col.appendChild(block);
+    });
+    return col;
+  });
+  document.getElementById("sceneCount").textContent = scenes.length;
+  document.getElementById("gradeCount").textContent = gradeCount;
+  if (grouped) {
+    board.replaceChildren(...masonry(cols));
+  } else {
+    const label = document.createElement("div");
+    label.className = "tape-label";
+    label.textContent = `Edit order · ${n} shots`;
+    tape.replaceChildren(label, ...buttons);
+  }
+  tape.hidden = grouped;
+  boardWrap.hidden = !grouped;
+  viewEdit.setAttribute("aria-pressed", String(mode === "edit"));
+  viewGroups.setAttribute("aria-pressed", String(mode === "jev"));
+  viewLabels.setAttribute("aria-pressed", String(mode === "labels"));
+  const legend = document.getElementById("legendMoved"); if (legend) legend.hidden = mode !== "labels";
+  buttons.forEach((b, i) => b.classList.toggle("moved", mode === "labels" && movedSet.has(i)));
+  paintFocus();
+}
+
+// Greedy masonry: as many stacks as fit at ~220px, each scene into the
+// currently shortest stack (height estimated from shot and group counts).
+function masonry(cols) {
+  const width = board.clientWidth || boardWrap.parentElement.clientWidth;
+  const count = Math.max(1, Math.floor((width + 12) / (220 + 12)));
+  const stacks = Array.from({ length: count }, () => {
+    const el = document.createElement("div");
+    el.className = "stack";
+    return { el, height: 0 };
+  });
+  for (const col of cols) {
+    const target = stacks.reduce((a, b) => (b.height < a.height ? b : a));
+    target.el.appendChild(col);
+    target.height += col.querySelectorAll(".shot").length + 0.35 * col.querySelectorAll(".grade").length + 0.6;
+  }
+  return stacks.map(s => s.el);
+}
+
+// FLIP: note where every thumbnail is, rebuild the layout, then animate each
+// one from its old spot to its new one. Columns and labels fade in behind.
+function render(animate = true) {
+  const before = buttons.map(b => b.getBoundingClientRect());
+  layout();
+  if (!animate || reduceMotion) return;
+  // Read every new position before starting any animation: starting one
+  // invalidates layout, and re-reading after each would force 124 relayouts.
+  const after = buttons.map(b => b.getBoundingClientRect());
+  buttons.forEach((b, i) => {
+    if (!after[i].width || !before[i].width) return;
+    const dx = before[i].left - after[i].left, dy = before[i].top - after[i].top;
+    const s = before[i].width / after[i].width;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(s - 1) < 0.01) return;
+    b.animate(
+      // transform only, so the browser can run it off the main thread
+      // (transform-origin is set once in CSS).
+      [{ transform: `translate(${dx}px, ${dy}px) scale(${s})` }, { transform: "none" }],
+      { duration: 850, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", delay: grouped ? delayOf[i] : 0, fill: "backwards" });
+  });
+  // Fade in the group frames (borders, fills, labels) without hiding the
+  // thumbnails flying into them.
+  if (grouped) {
+    const groupCount = board.querySelectorAll(".col").length;
+    board.querySelectorAll(".col, .grade").forEach(el => {
+      const g = Number(el.closest(".col").dataset.g);
+      el.animate([{ borderColor: "transparent", backgroundColor: "transparent" }],
+        { duration: 600, delay: staggerOf(g, groupCount) + 150, fill: "backwards" });
+    });
+    board.querySelectorAll(".col-head, .grade-head").forEach(el => {
+      const g = Number(el.closest(".col").dataset.g);
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: staggerOf(g, groupCount) + 200, fill: "backwards" });
+    });
+  } else {
+    tape.querySelectorAll(".tape-label").forEach(el =>
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, fill: "backwards" }));
+  }
+}
+
+function paintFocus() {
+  board.classList.toggle("focus", selected !== null);
+  for (const btn of board.querySelectorAll(".shot")) {
+    const i = Number(btn.dataset.i);
+    btn.classList.toggle("selected", i === selected);
+    btn.querySelector(".badge")?.remove();
+    btn.style.removeProperty("--o");
+    if (selected === null || i === selected) continue;
+    const p = sceneOf[i] === sceneOf[selected] ? gradeP[selected][i] : sceneP[selected][i];
+    btn.style.setProperty("--o", (0.18 + 0.82 * p).toFixed(2));
+    const badge = document.createElement("span");
+    badge.className = "badge" + (p >= 0.5 ? " high" : "");
+    badge.textContent = p.toFixed(2);
+    btn.appendChild(badge);
+  }
+}
+
+document.getElementById("sceneCut").addEventListener("input", () => render());
+document.getElementById("gradeCut").addEventListener("input", () => render());
+let resizeTimer;
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (grouped) render(false); }, 150);
+});
+function setMode(m) { if (mode === m) return; mode = m; grouped = m !== "edit"; render(); }
+viewEdit.addEventListener("click", () => setMode("edit"));
+viewGroups.addEventListener("click", () => setMode("jev"));
+viewLabels.addEventListener("click", () => setMode("labels"));
+detailsToggle.addEventListener("click", () => {
+  detailsEl.hidden = !detailsEl.hidden;
+  detailsToggle.textContent = detailsEl.hidden ? "Show details" : "Hide details";
+  detailsToggle.setAttribute("aria-expanded", String(!detailsEl.hidden));
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && selected !== null) { selected = null; paintFocus(); } });
+document.getElementById("pairCount").textContent =
+  (Object.keys(DATA.scenePairs).length + Object.keys(DATA.gradePairs).length).toLocaleString("en-US");
+document.getElementById("shotCount").textContent = n;
+
+// What each Jev pass did, what it cost and how long it took.
+const RUN_TEXT = {
+  scene2: { title: "Scenes", basics: s => `Jev judged every pair of the ${n} shots from one still per shot (the middle frame, at ${s.image_size}). Each request carried the stills its questions needed plus one yes/no question per pair. The probabilities are then clustered into scenes by the first slider.` },
+  grade: { title: "Grade groups", basics: s => `Jev judged only pairs inside the same scene from pass 1, using the same ${s.image_size} frames. Within each scene the probabilities are clustered into grade groups by the second slider.` },
+};
+const esc = t => t.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const runsEl = document.getElementById("runs");
+DATA.runs.forEach((r, i) => {
+  const text = RUN_TEXT[r.kind] ?? { title: r.kind, basics: () => r.scope };
+  const el = document.createElement("article");
+  el.className = "run";
+  el.innerHTML = `
+    <div class="run-head"><span class="eyebrow">Pass ${i + 1}</span><h3>${text.title}</h3></div>
+    <p>${esc(text.basics(r))}</p>
+    <dl class="stats">
+      <div><dt>Pairs</dt><dd>${r.pairs.toLocaleString("en-US")}</dd></div>
+      <div><dt>Requests</dt><dd>${r.requests}</dd></div>
+      <div><dt>Input tokens</dt><dd>${r.input_tokens.toLocaleString("en-US")}</dd></div>
+      <div><dt>Cost</dt><dd>$${r.cost.toFixed(4)}</dd></div>
+      <div><dt>Time</dt><dd>${r.seconds} s</dd></div>
+    </dl>
+    <div class="prompt"><span class="k">Question</span> ${esc(r.prompt.instructions.replace("`{a}`", "shot A").replace("`{b}`", "shot B"))}<br>
+      <span class="k">Yes</span> ${esc(r.prompt.criteria.true)}<br>
+      <span class="k">No</span> ${esc(r.prompt.criteria.false)}</div>`;
+  runsEl.appendChild(el);
+});
+const totalCost = DATA.runs.reduce((a, r) => a + r.cost, 0);
+const totalTime = DATA.runs.reduce((a, r) => a + r.seconds, 0);
+const total = document.createElement("p");
+total.className = "runs-total";
+total.innerHTML = `Both passes: <b>$${totalCost.toFixed(4)}</b> and <b>${totalTime} s</b> on ${esc(DATA.runs[0].model)} via OpenRouter. Time is wall-clock per pass, including uploading the frames.`;
+runsEl.appendChild(total);
+
+render(false);  // opens in edit order; grouping waits for the button
+</script>

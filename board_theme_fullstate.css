@@ -1,0 +1,32 @@
+/* fullstate.dev theme for the board: paper, ink, Newsreader and JetBrains Mono, matching the site.
+   Scene hues stay, toned for a light page. Overrides viz_template.html's dark grading-suite look. */
+@font-face { font-family: "JetBrains Mono"; src: url("/fonts/JetBrainsMono-latin.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url("/fonts/Newsreader-latin.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+:root {
+  --bg: #f6f0e3; --panel: #efe7d6; --sub: #e7ddc8; --line: #d6cab2;
+  --fg: #2e2419; --muted: #625545; --accent: #2e2419; --accent-ink: #f6f0e3;
+  --font-display: "Newsreader", Georgia, serif;
+  --font-body: "Newsreader", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+h1, .run-head h3, .col-head h2 { font-weight: 700; letter-spacing: -0.01em; }
+.sub, .run p { font-size: 1rem; }
+.control label, .tape-label, .stats dt, .run-head .eyebrow { font-family: var(--font-mono); letter-spacing: 0.04em; }
+.seg button, .ghost { font-family: var(--font-mono); font-weight: 500; font-size: 0.82rem; }
+.slider-row input { accent-color: #2e2419; }
+.run-head .eyebrow { color: var(--muted); }
+.prompt { background: #fbf7ee; border: 1px solid var(--line); }
+.prompt .k { color: var(--fg); font-weight: 700; }
+.col { background: hsl(var(--h) 32% 93%); border-color: hsl(var(--h) 45% 40%); }
+.col-head { border-bottom-color: hsl(var(--h) 30% 75%); }
+.col-head h2 { color: hsl(var(--h) 50% 30%); }
+.grade { background: hsl(var(--h) 28% 86%); border-color: hsl(var(--h) 25% 66%); }
+.grade.alt { background: hsl(var(--h) 20% 90%); border-color: hsl(var(--h) 18% 74%); }
+.badge { background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.badge.high { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.shot.selected img { outline-color: var(--fg); }
+.shot.moved img { outline-color: #2f6f68; }
+.shot.moved::after { background: #2f6f68; color: #f6f0e3; }
+.legend-moved i { background: #2f6f68; }
+.credit a { color: var(--fg); }
