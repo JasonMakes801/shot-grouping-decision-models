@@ -1,6 +1,6 @@
 # Grouping a film's shots by asking a decision model
 
-Code and data for the write-up *Grouping shots by asking questions*. The job: take the 124 shots of
+Code and data for [*Ask, Don’t Embed: Grouping Shots with a Decision Model*](https://fullstate.dev/work/decision-models/). The job: take the 124 shots of
 [Tears of Steel](https://mango.blender.org), one still per shot, and group them twice, first into scenes
 (one location under one light) and then, inside each scene, into grade groups (the setups one color grade
 could cover). Instead of embedding the stills and clustering vectors, every pair of shots gets one yes/no
