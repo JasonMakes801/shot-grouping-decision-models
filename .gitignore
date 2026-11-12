@@ -5,3 +5,7 @@ __pycache__/
 out/
 *.mov
 *.mp4
+skilltest/fixture/
+skilltest/labels.json
+skilltest/runs/
+skilltest/imagenette2-160*

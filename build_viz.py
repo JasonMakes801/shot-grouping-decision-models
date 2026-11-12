@@ -98,6 +98,7 @@ def main():
         # swap the Google Fonts link for the site's own fonts, and layer the theme over the template's styles
         html = re.sub(r'<link rel="(preconnect|stylesheet)" href="https://fonts\.(googleapis|gstatic)\.com[^>]*>\n?', "", html)
         html = html.replace("</style>", theme_css + "\n</style>", 1)
+        html = '<meta name="robots" content="noindex">\n' + html   # an embedded app, not an article: keep it out of sitemaps
     if standalone:
         html = STANDALONE_HEAD + html.replace("<!--BODY-->", "</head>\n<body>", 1) + "\n</body>\n</html>\n"
     (out / "index.html").write_text(html)

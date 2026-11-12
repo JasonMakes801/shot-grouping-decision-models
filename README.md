@@ -76,6 +76,46 @@ its would-be group mates.
   sent about 31 times. Workers AI sizes requests from base64 length, so 67 of the 124 stills are
   re-encoded at stronger JPEG compression to fit, at the same 784 px. See `clef_pairs.py`.
 
+## The agent skill
+
+`skills/group-images-with-jev/SKILL.md` teaches a coding agent to do this job on any images, by any criterion you
+can state in words: the call, the three rules that make requests fail (image size, request size, where images go),
+turning pair probabilities into groups, and what to change when the groups are wrong. It follows the
+[Agent Skills](https://agentskills.io) format, which Claude Code, Codex, Gemini CLI, Cursor and others read.
+
+```bash
+npx skills add JasonMakes801/shot-grouping-decision-models
+```
+
+Or copy `skills/group-images-with-jev/` into your project's `.claude/skills/`.
+
+### How the skill is tested
+
+`skilltest/` runs fresh, headless Claude Code agents on a job the repo does not contain: 256 photos from
+[Imagenette](https://github.com/fastai/imagenette), 8 classes of 32, at 160 px, so every photo is under Jev's 280 px
+minimum. Each agent gets a clean folder with only the photos and the skill, and one sentence that does not mention
+the skill: "Group the photos in this folder by what they show, using Jev. Write the groups to groups.json."
+A run passes only if the agent loaded the skill on its own, every photo is grouped, at least 90% land in a group
+whose majority is their class, at least 90% sit in their class's largest group, and no request failed with an error
+the skill warns about.
+
+```bash
+python3 skilltest/prepare.py                              # downloads Imagenette, builds the folder and answer key
+OPENROUTER_API_KEY=... python3 skilltest/run_test.py 3    # three agents in parallel, then scores each
+```
+
+Results on 2026-11-12, Claude Code 2.1.322 with its default model (`skilltest/results/2026-11-12.jsonl`):
+
+| Run | Skill loaded | Groups | In a majority-correct group | In their class's largest group | Errors | Turns | Minutes |
+|---|---|---|---|---|---|---|---|
+| 1 | yes | 11 | 253 of 256 | 96.9% | none | 21 | 1.6 |
+| 2 | yes | 12 | 253 of 256 | 96.1% | none | 19 | 1.4 |
+| 3 | yes | 14 | 252 of 256 | 95.3% | none | 13 | 1.3 |
+
+All three passed. Every agent loaded the skill as its first action, upscaled the photos, batched the 32,640
+pair questions into 36 to 46 requests, and paid Jev $0.21 to $0.26. The extra groups are a few strays of one to
+three photos each; each class's main group held 28 to 34 photos.
+
 ## Ground truth
 
 `data/tos/labels/tos_labels.json` holds hand labels for all 124 shots: 20 scenes and 68 grade groups.
@@ -102,6 +142,8 @@ python3 build_label_board.py        # writes data/tos/labels/index.html; open it
 | `build_label_board.py`, `label_template.html` | Browser board for hand labeling, seeded from Jev's groups |
 | `build_viz.py`, `viz_template.html`, `board_theme_fullstate.css` | The interactive board: edit order, Jev's groups, hand-corrected groups |
 | `build_stages.py`, `stages_template.html` | The five-step sorting animation used in the write-up |
+| `skills/group-images-with-jev/SKILL.md` | The agent skill for this job |
+| `skilltest/` | The skill's test: `prepare.py` builds the folder, `run_test.py` runs the agents, `check.py` scores a run |
 | `data/tos/results/` | Every answer, run log and score: `scene2` and `grade` are Jev, `scene` is the first wording, `clef_` is Clef, `*_raw.jsonl` are Clef's raw replies |
 
 ## Credits and license
