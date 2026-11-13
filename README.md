@@ -97,11 +97,12 @@ minimum. Each agent gets a clean folder with only the photos and the skill, and 
 the skill: "Group the photos in this folder by what they show, using Jev. Write the groups to groups.json."
 A run passes only if the agent loaded the skill on its own, every photo is grouped, at least 90% land in a group
 whose majority is their class, at least 90% sit in their class's largest group, and no request failed with an error
-the skill warns about.
+the skill warns about. After the job, each agent is asked to list every problem it hit and how it got around it
+(`notes.md` in its run folder).
 
 ```bash
 python3 skilltest/prepare.py                              # downloads Imagenette, builds the folder and answer key
-OPENROUTER_API_KEY=... python3 skilltest/run_test.py 3    # three agents in parallel, then scores each
+OPENROUTER_API_KEY=... python3 skilltest/run_test.py 3    # three agents, one after another, then scores each
 ```
 
 Results on 2026-11-12, Claude Code 2.1.322 with its default model (`skilltest/results/2026-11-12.jsonl`):
@@ -112,7 +113,13 @@ Results on 2026-11-12, Claude Code 2.1.322 with its default model (`skilltest/re
 | 2 | yes | 12 | 253 of 256 | 96.1% | none | 19 | 1.4 |
 | 3 | yes | 14 | 252 of 256 | 95.3% | none | 13 | 1.3 |
 
-All three passed. Every agent loaded the skill as its first action, upscaled the photos, batched the 32,640
+Re-run on 2026-11-13 with the agent-notes step and no MCP servers visible to the agents
+(`skilltest/results/2026-11-13.jsonl`): all three passed again, with 254, 256 and 254 of 256 photos in
+majority-correct groups. Each agent's `notes.md` listed the snags it hit, including the 160 px photos, the token
+limit, an SSL certificate error on this machine's Python, and a few photos (bare trees, a radar dome) that fit no
+class.
+
+On 2026-11-12, all three passed. Every agent loaded the skill as its first action, upscaled the photos, batched the 32,640
 pair questions into 36 to 46 requests, and paid Jev $0.21 to $0.26. The extra groups are a few strays of one to
 three photos each; each class's main group held 28 to 34 photos.
 

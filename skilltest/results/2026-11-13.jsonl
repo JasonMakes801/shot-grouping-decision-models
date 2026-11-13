@@ -1,0 +1,3 @@
+{"run": "run_1", "skill_loaded": true, "groups": 14, "placed": 256, "right": 254, "accuracy": 0.992, "classes_kept_together": 0.961, "traps_hit": [], "turns": 20, "agent_cost_usd": 0.7, "minutes": 1.9, "stop": "success", "pass": true}
+{"run": "run_2", "skill_loaded": true, "groups": 14, "placed": 256, "right": 256, "accuracy": 1.0, "classes_kept_together": 0.969, "traps_hit": [], "turns": 20, "agent_cost_usd": 0.7, "minutes": 2.0, "stop": "success", "pass": true}
+{"run": "run_3", "skill_loaded": true, "groups": 14, "placed": 256, "right": 254, "accuracy": 0.992, "classes_kept_together": 0.961, "traps_hit": [], "turns": 14, "agent_cost_usd": 0.62, "minutes": 2.5, "stop": "success", "pass": true}
