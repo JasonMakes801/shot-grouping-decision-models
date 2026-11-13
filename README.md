@@ -12,8 +12,8 @@ question to a decision model, and the probabilities are clustered.
 | Requests | 16 + 6 | 1,891 + 684 |
 | Cost | $0.079 | $0.97 |
 | Wall-clock time | 7.8 s | 6 min 32 s |
-| Shots in the right scene | 122 of 124 | 115 of 124 |
-| Shots in the right grade group | 124 of 124 | 97 of 124 |
+| Shots in the right scene | 119 of 124 | 100 of 124 |
+| Shots in the right grade group | 123 of 124 | 92 of 124 |
 
 Both models were called through [OpenRouter's Decisions API](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-request)
 (`POST https://openrouter.ai/api/alpha/decisions`), which is marked alpha: "the shape may change."
@@ -56,7 +56,7 @@ can differ if the camera is on the same side and axis.
 
 Each also carries `criteria` describing what a yes and a no look like. The exact text is `PROMPTS` in
 `run_pairs.py`, which also holds the first scene wording (`scene`, "the same continuous stretch of story
-time") that scored 118 of 124.
+time") that put 111 of 124 shots in the right scene.
 
 ## From probabilities to groups
 
@@ -144,7 +144,7 @@ python3 build_label_board.py        # writes data/tos/labels/index.html; open it
 | `run_pairs.py` | Jev: one yes/no question per pair, blocked and parallel |
 | `clef_pairs.py` | Clef: the same questions, four images per request |
 | `group.py` | Average-linkage clustering of pair probabilities into groups |
-| `score_labels.py` | Scores against the hand labels: shots right, AUC, precision and recall, adjusted Rand |
+| `score_labels.py` | Scores against the hand labels: shots in the right group (no move needed), AUC, precision and recall, adjusted Rand |
 | `extract_tos.py` | Middle frame of each shot from the master, at 1568 px and 784 px |
 | `build_label_board.py`, `label_template.html` | Browser board for hand labeling, seeded from Jev's groups |
 | `build_viz.py`, `viz_template.html`, `board_theme_fullstate.css` | The interactive board: edit order, Jev's groups, hand-corrected groups |

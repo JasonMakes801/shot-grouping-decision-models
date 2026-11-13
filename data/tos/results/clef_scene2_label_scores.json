@@ -21,8 +21,8 @@
    "clusters_predicted": 28,
    "clusters_true": 20,
    "purity": 0.927,
-   "adjusted_rand": 0.85,
-   "shots_right": 115
+   "stay_put": 100,
+   "adjusted_rand": 0.85
   },
   {
    "level": "grade",
@@ -42,8 +42,8 @@
    "clusters_predicted": 51,
    "clusters_true": 68,
    "purity": 0.782,
-   "adjusted_rand": 0.655,
-   "shots_right": 97
+   "stay_put": 92,
+   "adjusted_rand": 0.655
   }
  ]
 }

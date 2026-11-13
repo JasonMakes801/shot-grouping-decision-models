@@ -74,6 +74,18 @@ def cluster(events, probs, cutoff):
     return dict(zip(events, map(int, labels)))
 
 
+def stay_put(pred, truth):
+    """Shots that are already where they belong: the most shots that can stay put when each predicted group is
+    matched to at most one true group. A shot left alone, or in the wrong group, has to be moved."""
+    from scipy.optimize import linear_sum_assignment
+    P = sorted(set(pred.values()), key=str); T = sorted(set(truth.values()), key=str)
+    M = np.zeros((len(P), len(T)), int)
+    for e in pred:
+        M[P.index(pred[e]), T.index(truth[e])] += 1
+    r, c = linear_sum_assignment(-M)
+    return int(M[r, c].sum())
+
+
 def purity(pred, truth):
     groups = {}
     for e, c in pred.items():
@@ -99,6 +111,7 @@ def score(name, events, truth_of, probs, cutoff, pairs=None):
         "mean_p_different": round(float(np.mean(diff)), 3) if diff else None,
         "clusters_predicted": len(set(clus.values())), "clusters_true": len(set(truth_of[e] for e in events)),
         "purity": round(purity(clus, truth_of), 3),
+        "stay_put": stay_put(clus, truth_of),
         "adjusted_rand": round(adjusted_rand([clus[e] for e in events], [truth_of[e] for e in events]), 3),
     }
     print(f"{name:12s} shots {len(events):3d} pairs {len(pairs):5d} same {len(same):4d} | auc {report['auc']}  "
@@ -129,10 +142,17 @@ def main():
     if not prefix and (results / "grade_all_pairs.json").exists():
         all_probs = json.loads((results / "grade_all_pairs.json").read_text())
         reports.append(score("grade_1pass", events, group_of, all_probs, grade_cut))
-    for r in reports:
-        r["shots_right"] = round(r["purity"] * r["shots"])
-    print(f"shots in the right scene: {reports[0]['shots_right']} of {len(events)} | "
-          f"in the right grade group: {reports[1]['shots_right']} of {len(events)}")
+    # grade groups as run: clustered inside each scene the model found, then matched against the labels
+    by_scene = {}
+    for e, c in cluster(events, scene_probs, scene_cut).items():
+        by_scene.setdefault(c, []).append(e)
+    grade_pred = {}
+    for c, mem in by_scene.items():
+        sub = cluster(sorted(mem), grade_probs, grade_cut) if len(mem) > 1 else {mem[0]: 0}
+        grade_pred.update({e: f"{c}_{g}" for e, g in sub.items()})
+    reports[1]["stay_put"] = stay_put(grade_pred, group_of)
+    print(f"shots in the right scene (no move needed): {reports[0]['stay_put']} of {len(events)} | "
+          f"in the right grade group: {reports[1]['stay_put']} of {len(events)}")
     out = results / f"{prefix}{scene_kind}_label_scores.json"
     out.write_text(json.dumps({"labels": args[0], "scene_cut": scene_cut, "grade_cut": grade_cut, "reports": reports}, indent=1))
     print("wrote", out)

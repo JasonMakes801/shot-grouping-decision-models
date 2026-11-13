@@ -21,8 +21,8 @@
    "clusters_predicted": 19,
    "clusters_true": 20,
    "purity": 0.952,
-   "adjusted_rand": 0.934,
-   "shots_right": 118
+   "stay_put": 111,
+   "adjusted_rand": 0.934
   },
   {
    "level": "grade",
@@ -42,8 +42,8 @@
    "clusters_predicted": 69,
    "clusters_true": 68,
    "purity": 1.0,
-   "adjusted_rand": 0.997,
-   "shots_right": 124
+   "stay_put": 122,
+   "adjusted_rand": 0.997
   },
   {
    "level": "grade_1pass",
@@ -63,8 +63,8 @@
    "clusters_predicted": 67,
    "clusters_true": 68,
    "purity": 0.935,
-   "adjusted_rand": 0.892,
-   "shots_right": 116
+   "stay_put": 112,
+   "adjusted_rand": 0.892
   }
  ]
 }
